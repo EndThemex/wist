@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   Plus,
   BarChart3,
@@ -10,22 +10,22 @@ import {
   Layers,
   MoreHorizontal,
   Check,
-} from 'lucide-react';
-import { newItemLink } from '@/lib/url';
-import './AppShell.css';
+} from "lucide-react";
+import { newItemLink } from "@/lib/url";
+import "./AppShell.css";
 
 // 主导航：单一数据源，桌面侧栏与移动底栏均从此派生
 const NAV = [
-  { to: '/', label: '物品', icon: Package, end: true },
-  { to: '/groups', label: '分组', icon: FolderTree },
-  { to: '/categories', label: '分类', icon: Layers },
-  { to: '/tags', label: '标签', icon: TagIcon },
-  { to: '/stats', label: '统计', icon: BarChart3 },
-  { to: '/settings', label: '设置', icon: Settings },
+  { to: "/", label: "物品", icon: Package, end: true },
+  { to: "/groups", label: "分组", icon: FolderTree },
+  { to: "/categories", label: "分类", icon: Layers },
+  { to: "/tags", label: "标签", icon: TagIcon },
+  { to: "/stats", label: "统计", icon: BarChart3 },
+  { to: "/settings", label: "设置", icon: Settings },
 ];
 
 // 移动端底栏直出的项；其余折叠进「更多」下拉
-const TABBAR_PINNED = ['/', '/stats', '/settings'];
+const TABBAR_PINNED = ["/", "/stats", "/settings"];
 
 export default function AppShell({ children }) {
   const { pathname } = useLocation();
@@ -36,10 +36,12 @@ export default function AppShell({ children }) {
       {/* 桌面侧栏 */}
       <aside className="sidebar" aria-label="主导航">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">⌘</span>
+          <span className="brand-mark" aria-hidden="true">
+            ⌘
+          </span>
           <div className="brand-text">
             <div className="brand-name">Where is it</div>
-            <div className="brand-sub mono">v0.1 · local-first</div>
+            <div className="brand-sub mono">v0.1 · 私人物品账本</div>
           </div>
         </div>
         <NavList />
@@ -68,7 +70,7 @@ function NavList() {
           key={to}
           to={to}
           end={end}
-          className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+          className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
         >
           <Icon size={18} strokeWidth={1.5} aria-hidden />
           <span>{label}</span>
@@ -118,23 +120,24 @@ function TabBar() {
 
   // 当前是否激活「更多」分组中的某项（用于高亮触发按钮）
   const moreActive = more.some((m) =>
-    m.to === '/' ? pathname === '/' : pathname.startsWith(m.to)
+    m.to === "/" ? pathname === "/" : pathname.startsWith(m.to),
   );
 
   // 点击外部 / Esc 关闭
   useEffect(() => {
     if (!open) return undefined;
     const onDocClick = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+      if (rootRef.current && !rootRef.current.contains(e.target))
+        setOpen(false);
     };
     const onEsc = (e) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === "Escape") setOpen(false);
     };
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onEsc);
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
     return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onEsc);
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
     };
   }, [open]);
 
@@ -146,7 +149,7 @@ function TabBar() {
             key={to}
             to={to}
             end={end}
-            className={({ isActive }) => `tab-item${isActive ? ' active' : ''}`}
+            className={({ isActive }) => `tab-item${isActive ? " active" : ""}`}
             aria-label={label}
             title={label}
           >
@@ -157,7 +160,7 @@ function TabBar() {
 
         {/* 「更多」下拉：承载 分组 / 分类 / 标签 */}
         <div
-          className={`tab-more${open ? ' open' : ''}${moreActive ? ' active' : ''}`}
+          className={`tab-more${open ? " open" : ""}${moreActive ? " active" : ""}`}
           ref={rootRef}
         >
           <button
@@ -180,16 +183,19 @@ function TabBar() {
                   to={to}
                   end={end}
                   role="menuitem"
-                  className={({ isActive }) => `tab-more-item${isActive ? ' active' : ''}`}
+                  className={({ isActive }) =>
+                    `tab-more-item${isActive ? " active" : ""}`
+                  }
                   onClick={() => setOpen(false)}
                 >
                   <Icon size={14} strokeWidth={1.5} aria-hidden />
                   <span className="tab-more-name">{label}</span>
                   {(() => {
-                    const active = to === '/'
-                      ? pathname === '/'
-                      : pathname.startsWith(to);
-                    return active ? <Check size={12} strokeWidth={2} aria-hidden /> : null;
+                    const active =
+                      to === "/" ? pathname === "/" : pathname.startsWith(to);
+                    return active ? (
+                      <Check size={12} strokeWidth={2} aria-hidden />
+                    ) : null;
                   })()}
                 </NavLink>
               ))}
@@ -213,24 +219,26 @@ function TabBar() {
 /* ============ 路径 → 标题 / 提示 ============ */
 
 function getPageMeta(pathname) {
-  if (pathname === '/') {
-    return { title: '物品', hint: 'ITEMS' };
+  if (pathname === "/") {
+    return { title: "物品", hint: "ITEMS" };
   }
-  if (pathname === '/items/new') {
-    return { title: '新增物品', hint: 'ITEMS / NEW' };
+  if (pathname === "/items/new") {
+    return { title: "新增物品", hint: "ITEMS / NEW" };
   }
   const editMatch = /^\/items\/([^/]+)\/edit/.exec(pathname);
   if (editMatch) {
-    return { title: '编辑物品', hint: `ITEMS / ${editMatch[1].slice(0, 8)}` };
+    return { title: "编辑物品", hint: `ITEMS / ${editMatch[1].slice(0, 8)}` };
   }
   const detailMatch = /^\/items\/([^/]+)/.exec(pathname);
   if (detailMatch) {
-    return { title: '物品详情', hint: `ITEMS / ${detailMatch[1].slice(0, 8)}` };
+    return { title: "物品详情", hint: `ITEMS / ${detailMatch[1].slice(0, 8)}` };
   }
-  if (pathname.startsWith('/groups')) return { title: '分组', hint: 'GROUPS' };
-  if (pathname.startsWith('/categories')) return { title: '分类', hint: 'CATEGORIES' };
-  if (pathname.startsWith('/tags')) return { title: '标签', hint: 'TAGS' };
-  if (pathname.startsWith('/stats')) return { title: '统计', hint: 'STATS' };
-  if (pathname.startsWith('/settings')) return { title: '设置', hint: 'SETTINGS' };
-  return { title: '', hint: '' };
+  if (pathname.startsWith("/groups")) return { title: "分组", hint: "GROUPS" };
+  if (pathname.startsWith("/categories"))
+    return { title: "分类", hint: "CATEGORIES" };
+  if (pathname.startsWith("/tags")) return { title: "标签", hint: "TAGS" };
+  if (pathname.startsWith("/stats")) return { title: "统计", hint: "STATS" };
+  if (pathname.startsWith("/settings"))
+    return { title: "设置", hint: "SETTINGS" };
+  return { title: "", hint: "" };
 }

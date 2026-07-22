@@ -1,17 +1,17 @@
-import { useEffect, lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useCatalogStore } from '@/store/useCatalogStore';
-import AppShell from '@/components/AppShell.jsx';
-import ItemsListPage from '@/pages/ItemsListPage.jsx';
+import { useEffect, lazy, Suspense } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useCatalogStore } from "@/store/useCatalogStore";
+import AppShell from "@/components/AppShell.jsx";
+import HomePage from "@/pages/HomePage.jsx";
 
 // 数据页：按需加载，缩减首屏 JS 体量
-const ItemDetailPage = lazy(() => import('@/pages/ItemDetailPage.jsx'));
-const ItemEditPage = lazy(() => import('@/pages/ItemEditPage.jsx'));
-const GroupsPage = lazy(() => import('@/pages/GroupManagePage.jsx'));
-const CategoriesPage = lazy(() => import('@/pages/CategoriesPage.jsx'));
-const TagsPage = lazy(() => import('@/pages/TagsPage.jsx'));
-const StatsPage = lazy(() => import('@/pages/StatsPage.jsx'));
-const SettingsPage = lazy(() => import('@/pages/SettingsPage.jsx'));
+const ItemDetailPage = lazy(() => import("@/pages/ItemDetailPage.jsx"));
+const ItemEditPage = lazy(() => import("@/pages/ItemEditPage.jsx"));
+const GroupsPage = lazy(() => import("@/pages/GroupManagePage.jsx"));
+const CategoriesPage = lazy(() => import("@/pages/CategoriesPage.jsx"));
+const TagsPage = lazy(() => import("@/pages/TagsPage.jsx"));
+const StatsPage = lazy(() => import("@/pages/StatsPage.jsx"));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage.jsx"));
 
 function RouteFallback() {
   return (
@@ -34,10 +34,13 @@ export default function App() {
     <AppShell>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          <Route path="/" element={<ItemsListPage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/items/new" element={<ItemEditPage mode="create" />} />
           <Route path="/items/:id" element={<ItemDetailPage />} />
-          <Route path="/items/:id/edit" element={<ItemEditPage mode="edit" />} />
+          <Route
+            path="/items/:id/edit"
+            element={<ItemEditPage mode="edit" />}
+          />
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/tags" element={<TagsPage />} />

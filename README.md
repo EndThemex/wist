@@ -3,11 +3,6 @@
 > A local-first, privacy-friendly inventory app for tracking where your belongings live.
 > 数据只保存在你的浏览器里，不上云、不上传。
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
-![React](https://img.shields.io/badge/React-18-000?logo=react)
-![Vite](https://img.shields.io/badge/Vite-5-000?logo=vite)
-![Offline](https://img.shields.io/badge/offline--ready-yes-000)
-
 ## ✨ 特性
 
 - 📦 **物品管理**：名称、型号、位置、标签、价格、数量、备注、图片
@@ -21,7 +16,11 @@
 
 ## 📸 截图
 
-> 待补充：建议在 `docs/screenshots/` 放 2-3 张截图后引用。
+首次打开应用时，呈现一张说明站点身份与特点的引导首页：
+
+![首页](docs/imgs/home.png)
+
+> 更多截图（物品列表 / 详情 / 统计 等）将在 `docs/imgs/` 持续补充。
 
 ## 🚀 快速开始
 
@@ -43,14 +42,14 @@ pnpm preview
 
 ## 🧱 技术栈
 
-| 类别       | 选型                                     |
-| ---------- | ---------------------------------------- |
-| 框架       | React 18 + React Router 6                |
-| 构建       | Vite 5 + `@vitejs/plugin-react-swc`      |
-| 状态       | Zustand                                  |
-| 持久化     | IndexedDB（封装在 `src/lib/db.js`）      |
-| 图标       | lucide-react                             |
-| 样式       | 原生 CSS + CSS 变量（无 UI 框架）        |
+| 类别   | 选型                                |
+| ------ | ----------------------------------- |
+| 框架   | React 18 + React Router 6           |
+| 构建   | Vite 5 + `@vitejs/plugin-react-swc` |
+| 状态   | Zustand                             |
+| 持久化 | IndexedDB（封装在 `src/lib/db.js`） |
+| 图标   | lucide-react                        |
+| 样式   | 原生 CSS + CSS 变量（无 UI 框架）   |
 
 ## 📁 项目结构
 
