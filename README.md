@@ -3,6 +3,8 @@
 > A local-first, privacy-friendly inventory app for tracking where your belongings live.
 > 数据只保存在你的浏览器里，不上云、不上传。
 
+🌐 **[English](README.en.md)** · 简体中文
+
 ## ✨ 特性
 
 - 📦 **物品管理**：名称、型号、位置、标签、价格、数量、备注、图片
