@@ -1,0 +1,352 @@
+.items-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  height: 40px;
+  flex: 1;
+  min-width: 0;
+  transition: border-color var(--transition);
+}
+
+.search:focus-within {
+  border-color: var(--border-strong);
+}
+
+.search-input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.filters-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.filters-controls__sort {
+  height: 36px;
+  padding: 0 8px;
+  background-color: var(--bg-elev);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  min-width: 0;
+  width: 100%;
+  color-scheme: light dark;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 8px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 26px;
+}
+
+/* 修复暗色主题下拉项——把整个 <option> 也设成与 select 容器协调 */
+.filters-controls__sort option {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+.filters-selects {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+
+.filters-select {
+  min-width: 0;
+}
+
+.filters-clear {
+  display: none;
+}
+
+.result-meta {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  overflow-wrap: anywhere;
+}
+
+.manage-entries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.manage-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  background: transparent;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.manage-entry:hover {
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+
+/* === Grid === */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+.item-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition), transform var(--transition);
+  min-width: 0;
+}
+
+.item-card:hover,
+.item-card:focus-visible {
+  border-color: var(--border-strong);
+  outline: none;
+}
+
+.item-card .thumb,
+.item-card .thumb-placeholder {
+  border-bottom: 1px solid var(--border);
+}
+
+.item-card.no-image {
+  /* 收紧 padding：去掉图片区后给卡片本身省下视觉空间 */
+}
+
+.item-card.no-image .item-card-body {
+  padding: 14px;
+}
+
+.item-card-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.item-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+
+.item-title > .ellipsis-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.qty {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+  min-width: 0;
+}
+
+.meta .tag {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  min-width: 0;
+}
+
+.price {
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.loc {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  max-width: 60%;
+  min-width: 0;
+}
+
+/* === List view === */
+.item-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+
+.item-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.item-row:hover {
+  background: var(--hover);
+}
+
+.row-thumb .thumb,
+.row-thumb .thumb-placeholder {
+  width: 56px;
+  height: 56px;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.row-main {
+  min-width: 0;
+}
+
+.row-thumb-placeholder {
+  width: 56px;
+  height: 56px;
+  aspect-ratio: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elev);
+  color: var(--fg-subtle);
+}
+
+.row-line1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.row-end {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.ellipsis-1 {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  /* 手机模式：三个筛选依然横向并排，等分可用宽度，靠省略号截断长文本 */
+  .filters-selects {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .filters-select .ms-trigger {
+    padding: 0 8px;
+    font-size: 12px;
+    height: 34px;
+  }
+  .filters-select .ms-trigger-caret {
+    display: none;
+  }
+  .filters-controls .icon-btn-label {
+    display: none;
+  }
+  .filters-controls .icon-btn {
+    padding: 0;
+    width: 56px;
+    height: 36px;
+    justify-content: center;
+  }
+  .item-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .filters-controls {
+    grid-template-columns: auto 220px;
+  }
+}

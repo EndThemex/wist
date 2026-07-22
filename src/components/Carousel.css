@@ -1,0 +1,110 @@
+.carousel {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  aspect-ratio: 4 / 3;
+  transition: height var(--transition);
+}
+
+.carousel.compact {
+  aspect-ratio: auto;
+  height: 96px;
+}
+
+.carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.carousel-img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  background: var(--bg-elev);
+  display: block;
+}
+
+.carousel-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--fg-subtle);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent 8px,
+      var(--border) 8px,
+      var(--border) 9px
+    );
+  background-size: 16px 16px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.18em;
+  font-size: 11px;
+}
+
+.carousel-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg-muted);
+}
+
+.carousel-empty-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+}
+
+.carousel-indicator {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.carousel-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--danger);
+  background: var(--bg-elev);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}

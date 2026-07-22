@@ -1,0 +1,62 @@
+// 用户 UI 偏好 store（持久化到 localStorage）
+import { create } from 'zustand';
+import { loadPrefs, savePrefs } from '@/lib/prefs';
+
+const initial = loadPrefs();
+
+function toArr(v) {
+  if (Array.isArray(v)) return v.filter(Boolean);
+  if (v === '' || v == null) return [];
+  return [v];
+}
+
+export const usePrefsStore = create((set) => ({
+  ...initial,
+  setView: (view) => {
+    set({ view });
+    savePrefs({ view });
+  },
+  setSort: (sort) => {
+    set({ sort });
+    savePrefs({ sort });
+  },
+  setSortDir: (sortDir) => {
+    set({ sortDir });
+    savePrefs({ sortDir });
+  },
+  setDrawerOpen: () => {
+    // 抽屉已移除，保留 setter 以便兼容旧数据
+  },
+  setGroupIds: (groupIds) => {
+    const arr = toArr(groupIds);
+    set({ groupIds: arr });
+    savePrefs({ groupIds: arr });
+  },
+  setCategoryIds: (categoryIds) => {
+    const arr = toArr(categoryIds);
+    set({ categoryIds: arr });
+    savePrefs({ categoryIds: arr });
+  },
+  setTagIds: (tagIds) => {
+    const arr = toArr(tagIds);
+    set({ tagIds: arr });
+    savePrefs({ tagIds: arr });
+  },
+  setQ: (q) => {
+    set({ q });
+    savePrefs({ q });
+  },
+  reset: () => {
+    const cleared = savePrefs({
+      view: 'grid',
+      sort: 'newest',
+      sortDir: 'desc',
+      drawerOpen: false,
+      groupIds: [],
+      categoryIds: [],
+      tagIds: [],
+      q: '',
+    });
+    set(cleared);
+  },
+}));

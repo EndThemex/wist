@@ -1,0 +1,341 @@
+.shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  display: none;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--bg-elev);
+  padding: 20px 12px;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 20px;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.brand-sub {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius);
+  color: var(--fg-muted);
+  font-size: 13px;
+  border: 1px solid transparent;
+  transition: color var(--transition), background var(--transition), border-color var(--transition);
+}
+
+.nav-item:hover {
+  color: var(--fg);
+  background: var(--hover);
+}
+
+.nav-item.active {
+  color: var(--fg);
+  border-color: var(--border-strong);
+  background: transparent;
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  font-size: 10px;
+  padding: 8px;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 5;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  max-width: var(--max-content);
+  margin: 0 auto;
+  min-width: 0;
+}
+
+/* 标题 + 段提示整体占满中间可用宽度，自动让按钮贴右 */
+.topbar-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.topbar-title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 段提示（取代原独立 .crumbs）：小号 mono caps，紧贴标题右侧 */
+.topbar-hint {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 0 1 auto;
+  text-transform: uppercase;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.topbar-actions .icon-btn {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  .topbar-titles {
+    gap: 6px;
+  }
+  .topbar-hint {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .topbar-inner {
+    padding: 10px 32px;
+  }
+  .topbar-title {
+    font-size: 18px;
+  }
+}
+
+.content {
+  padding: 24px 20px 120px;
+  max-width: var(--max-content);
+  margin: 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+/* 移动端底部 Tab + 悬浮 FAB */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  pointer-events: none; /* 容器不接收事件，子项自己接收 */
+  padding: 0 12px calc(12px + env(safe-area-inset-bottom));
+  background: transparent;
+  border-top: 0;
+}
+
+.tabbar-inner {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 1px 0 var(--border);
+  max-width: calc(100vw - 24px);
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  border-radius: 999px;
+  transition: color var(--transition), background var(--transition);
+  flex-shrink: 0;
+}
+
+.tab-item.active {
+  color: var(--bg);
+  background: var(--fg);
+}
+
+.tab-item.tab-fab {
+  background: var(--fg);
+  color: var(--bg);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin-left: 4px;
+  box-shadow: 0 2px 0 var(--border);
+}
+
+.tab-item.tab-fab:hover {
+  opacity: 0.9;
+}
+
+.tab-item .tab-label {
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+}
+
+/* 「更多」下拉：承载 分组 / 分类 / 标签 */
+.tab-more {
+  position: relative;
+  display: inline-flex;
+}
+
+.tab-more-trigger.tab-item.active,
+.tab-more.open .tab-more-trigger.tab-item {
+  color: var(--bg);
+  background: var(--fg);
+}
+
+.tab-more-panel {
+  position: absolute;
+  bottom: calc(100% + 8px); /* 向上展开，避免被底栏遮挡 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  min-width: 160px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tab-more-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  font-size: 13px;
+  background: transparent;
+  transition: background var(--transition), color var(--transition);
+  min-width: 0;
+}
+
+.tab-more-item:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+
+.tab-more-item.active {
+  color: var(--fg);
+}
+
+.tab-more-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .tabbar-inner {
+    gap: 2px;
+    padding: 4px 6px;
+  }
+  .tab-item {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+  .tab-item.tab-fab {
+    width: 36px;
+    height: 36px;
+    margin-left: 2px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shell {
+    grid-template-columns: 200px 1fr;
+  }
+  .sidebar {
+    display: flex;
+  }
+  .tabbar {
+    display: none;
+  }
+  .content {
+    padding: 32px 32px 64px;
+  }
+}

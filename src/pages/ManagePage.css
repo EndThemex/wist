@@ -1,0 +1,82 @@
+.manage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.manage {
+  min-width: 0;
+}
+
+.manage-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.manage-title {
+  font-size: 20px;
+}
+
+.manage-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elev);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.manage-edit-row .input {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+
+.manage-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+
+.manage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+
+.manage-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+}
+
+.btn-danger-icon {
+  color: var(--danger);
+  border-color: var(--border);
+}
+
+.btn-danger-icon:hover {
+  border-color: var(--danger);
+}

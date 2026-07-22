@@ -1,0 +1,91 @@
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-head h2 {
+  font-size: 22px;
+}
+
+.settings-block {
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  padding: 16px;
+  border-radius: var(--radius);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.settings-label h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.settings-label p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Segmented control —— 每个按钮独立 1px 边框，靠 gap 形成自然分隔 */
+.segmented {
+  display: inline-flex;
+  align-self: start;
+  justify-self: start;
+  gap: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.segmented-opt {
+  padding: 0 14px;
+  height: 36px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
+  border-radius: var(--radius);
+  margin-left: -1px; /* 相邻按钮边框不重叠 */
+  transition: color var(--transition), background var(--transition), border-color var(--transition);
+  position: relative;
+  z-index: 0;
+}
+
+.segmented-opt:first-child {
+  margin-left: 0;
+}
+
+.segmented-opt:hover {
+  color: var(--fg);
+  border-color: var(--border-strong);
+  z-index: 1;
+}
+
+.segmented-opt.on {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--border-strong);
+  z-index: 1;
+}
+
+@media (min-width: 1024px) {
+  .settings-block {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 24px;
+  }
+  .settings-actions {
+    justify-content: flex-end;
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "where-is-it",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Where is it — A local-first, privacy-friendly inventory app for tracking where your belongings live. Data stays in your browser.",
+  "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "EndThemex",
+    "url": "https://github.com/EndThemex"
+  },
+  "homepage": "https://github.com/EndThemex/where-is-it#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EndThemex/where-is-it.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EndThemex/where-is-it/issues"
+  },
+  "keywords": [
+    "inventory",
+    "local-first",
+    "pwa",
+    "react",
+    "vite",
+    "idb",
+    "offline",
+    "privacy",
+    "where-is-it"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "idb": "^8.0.0",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "vite": "^5.4.11"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
