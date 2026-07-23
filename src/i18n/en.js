@@ -227,6 +227,14 @@ export default {
   "settings.about.line1": "Where is it · A local-first inventory tool",
   "settings.about.line2":
     "All data lives in your browser IndexedDB. No cloud, no tracking.",
+  "settings.section.images": "Images",
+  "settings.images.hint":
+    "Maximum size per image. Larger images are automatically downscaled before saving.",
+  "settings.images.maxSize": "Per-image limit",
+  "settings.images.options.512KB": "512 KB (smaller)",
+  "settings.images.options.1MB": "1 MB (default)",
+  "settings.images.options.2MB": "2 MB (sharper)",
+  "settings.images.options.5MB": "5 MB (high fidelity)",
 
   // ===== Home page =====
   "home.eyebrow": "WHERE IS IT? · Your private inventory",

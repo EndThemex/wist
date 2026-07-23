@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
 import { Download, Upload, Trash2 } from "lucide-react";
 import { useThemeStore } from "@/store/useThemeStore";
+import { usePrefsStore } from "@/store/usePrefsStore";
 import { useCatalogStore } from "@/store/useCatalogStore";
+import { formatBytes } from "@/lib/image";
 import {
   clearAll,
   describePayload,
@@ -15,6 +17,8 @@ import "./SettingsPage.css";
 export default function SettingsPage() {
   const themeMode = useThemeStore((s) => s.mode);
   const setTheme = useThemeStore((s) => s.set);
+  const maxImageBytes = usePrefsStore((s) => s.maxImageBytes);
+  const setMaxImageBytes = usePrefsStore((s) => s.setMaxImageBytes);
   const refresh = useCatalogStore((s) => s.refresh);
   const fileRef = useRef(null);
   const [busy, setBusy] = useState("");
@@ -170,6 +174,40 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="settings-block">
+        <div className="settings-label">
+          <h3>{t("settings.section.images")}</h3>
+          <p className="muted">{t("settings.images.hint")}</p>
+        </div>
+        <div
+          className="segmented"
+          role="radiogroup"
+          aria-label={t("settings.images.maxSize")}
+        >
+          {[
+            { v: 512 * 1024, labelKey: "settings.images.options.512KB" },
+            { v: 1 * 1024 * 1024, labelKey: "settings.images.options.1MB" },
+            { v: 2 * 1024 * 1024, labelKey: "settings.images.options.2MB" },
+            { v: 5 * 1024 * 1024, labelKey: "settings.images.options.5MB" },
+          ].map((o) => (
+            <button
+              key={o.v}
+              type="button"
+              role="radio"
+              aria-checked={maxImageBytes === o.v}
+              className={`segmented-opt${maxImageBytes === o.v ? " on" : ""}`}
+              onClick={() => setMaxImageBytes(o.v)}
+              title={formatBytes(o.v)}
+            >
+              {t(o.labelKey)}
+            </button>
+          ))}
+        </div>
+        <p className="mono subtle" style={{ marginTop: 6 }}>
+          {formatBytes(maxImageBytes)}
+        </p>
       </section>
 
       <section className="settings-block">

@@ -48,6 +48,12 @@ export const usePrefsStore = create((set) => ({
     if (usePrefsStore._qTimer) clearTimeout(usePrefsStore._qTimer);
     usePrefsStore._qTimer = setTimeout(() => savePrefs({ q }), 200);
   },
+  setMaxImageBytes: (bytes) => {
+    const n = Number(bytes);
+    if (!Number.isFinite(n) || n <= 0) return;
+    set({ maxImageBytes: n });
+    savePrefs({ maxImageBytes: n });
+  },
   reset: () => {
     const cleared = savePrefs({
       view: "grid",

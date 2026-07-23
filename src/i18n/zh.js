@@ -223,6 +223,13 @@ export default {
   "settings.about.line1": "Where is it · 本地优先的物品清单工具",
   "settings.about.line2":
     "数据完全保存在你的浏览器 IndexedDB 中，无云端、无追踪。",
+  "settings.section.images": "图片",
+  "settings.images.hint": "单张图片体积上限。超过会自动缩小并保存。",
+  "settings.images.maxSize": "单张上限",
+  "settings.images.options.512KB": "512 KB（更省空间）",
+  "settings.images.options.1MB": "1 MB（默认）",
+  "settings.images.options.2MB": "2 MB（更清晰）",
+  "settings.images.options.5MB": "5 MB（高保真）",
 
   // ===== 首页 =====
   "home.eyebrow": "WHERE IS IT? · 你的私人物品账本",

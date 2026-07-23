@@ -9,8 +9,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useCatalogStore } from "@/store/useCatalogStore";
+import { usePrefsStore } from "@/store/usePrefsStore";
 import { blobsRepo, imagesRepo } from "@/lib/repos";
-import { compressImage, formatBytes } from "@/lib/image";
+import { compressImage, compressImageToSize, formatBytes } from "@/lib/image";
 import { uid } from "@/lib/id";
 import { getDB } from "@/lib/db";
 import Thumb from "@/components/Thumb.jsx";
@@ -140,10 +141,21 @@ export default function ItemEditPage({ mode = "create" }) {
     const remain = MAX_IMAGES - imageIds.length;
     if (remain <= 0) return;
     const queue = files.slice(0, remain);
+    const maxBytes =
+      usePrefsStore.getState().maxImageBytes ||
+      compressImageToSize.DEFAULT_MAX_BYTES;
     const newIds = [];
+    let oversizeCount = 0;
     for (const file of queue) {
       try {
-        const compressed = await compressImage(file);
+        // 超出限额的图自动按目标体积压缩到 ≤ maxBytes（库内部迭代降质量/降尺寸）
+        const compressed =
+          file.size > maxBytes
+            ? await compressImageToSize(file, { maxSizeBytes: maxBytes })
+            : await compressImage(file);
+        if (file.size > maxBytes && compressed.size > maxBytes) {
+          oversizeCount += 1; // 极端情况：再怎么压缩也压不到限额以下
+        }
         const blobId = await blobsRepo.put(compressed);
         // 在新增模式下，最后保存时会写真正的 itemId；这里把 imageId 与 blobId 关联好但 itemId 可在保存时校正
         if (mode === "create") {
@@ -170,6 +182,11 @@ export default function ItemEditPage({ mode = "create" }) {
       }
     }
     setImageIds((cur) => [...cur, ...newIds]);
+    if (oversizeCount > 0) {
+      setError(
+        `有 ${oversizeCount} 张图压缩后仍超过 ${formatBytes(maxBytes)}，已尽量缩小保存`,
+      );
+    }
   };
 
   const removeImage = async (imageId) => {
