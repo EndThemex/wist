@@ -37,15 +37,17 @@
 
 /* Segmented control —— 每个按钮独立 1px 边框，靠 gap 形成自然分隔 */
 .segmented {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-self: start;
   justify-self: start;
-  gap: 0;
+  gap: 8px;
   border: 0;
   background: transparent;
   padding: 0;
   border-radius: 0;
   overflow: visible;
+  width: 100%;
 }
 
 .segmented-opt {
@@ -56,30 +58,38 @@
   background: transparent;
   color: var(--fg-muted);
   border-radius: var(--radius);
-  margin-left: -1px; /* 相邻按钮边框不重叠 */
-  transition: color var(--transition), background var(--transition), border-color var(--transition);
-  position: relative;
-  z-index: 0;
-}
-
-.segmented-opt:first-child {
-  margin-left: 0;
+  transition:
+    color var(--transition),
+    background var(--transition),
+    border-color var(--transition);
+  white-space: nowrap;
 }
 
 .segmented-opt:hover {
   color: var(--fg);
   border-color: var(--border-strong);
-  z-index: 1;
 }
 
 .segmented-opt.on {
   background: var(--fg);
   color: var(--bg);
   border-color: var(--border-strong);
-  z-index: 1;
 }
 
 @media (min-width: 1024px) {
+  /* 桌面端空间充足，恢复紧凑的分组样式：相邻边框自然重叠 */
+  .segmented {
+    flex-wrap: nowrap;
+    width: auto;
+    gap: 0;
+  }
+  .segmented-opt {
+    margin-left: -1px;
+  }
+  .segmented-opt:first-child {
+    margin-left: 0;
+  }
+
   .settings-block {
     grid-template-columns: 1fr 1fr;
     align-items: start;

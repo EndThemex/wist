@@ -4,7 +4,7 @@
  * ========================================================= */
 
 :root,
-[data-theme='light'] {
+[data-theme="light"] {
   --bg: #fafafa;
   --bg-elev: #ffffff;
   --fg: #0a0a0a;
@@ -19,9 +19,9 @@
   --danger: #7f1d1d;
   --success: #14532d;
 
-  --font-sans: 'Inter Tight', 'Noto Sans SC', system-ui, sans-serif;
-  --font-serif: 'IBM Plex Serif', 'Noto Serif SC', Georgia, serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: "Inter Tight", "Noto Sans SC", system-ui, sans-serif;
+  --font-serif: "IBM Plex Serif", "Noto Serif SC", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   --radius: 2px;
   --radius-sm: 4px;
@@ -32,7 +32,7 @@
   --max-content: 1280px;
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
   --bg: #0a0a0a;
   --bg-elev: #141414;
   --fg: #fafafa;
@@ -65,7 +65,9 @@ body,
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
 html,
@@ -89,6 +91,14 @@ textarea,
 select {
   font: inherit;
   color: inherit;
+}
+
+/* iOS Safari 在聚焦字号 < 16px 的表单元素时会自动放大页面，
+   这里将所有可输入元素的字体强制设为 16px，避免移动端被放大。 */
+input,
+textarea,
+select {
+  font-size: 16px;
 }
 
 button {
@@ -132,7 +142,7 @@ h4 {
   padding: 10px 0;
   outline: none;
   transition: border-color var(--transition);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .input:focus,
@@ -173,7 +183,9 @@ h4 {
   border-radius: var(--radius);
   font-weight: 500;
   font-size: 14px;
-  transition: opacity var(--transition), transform var(--transition);
+  transition:
+    opacity var(--transition),
+    transform var(--transition);
   white-space: nowrap;
 }
 
@@ -293,7 +305,11 @@ h4 {
   color: var(--fg-muted);
   border-radius: var(--radius-sm);
   font-size: 13px;
-  transition: color var(--transition), background var(--transition), border-color var(--transition), opacity var(--transition);
+  transition:
+    color var(--transition),
+    background var(--transition),
+    border-color var(--transition),
+    opacity var(--transition);
 }
 
 .icon-btn:hover {
