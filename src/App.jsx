@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useCatalogStore } from "@/store/useCatalogStore";
 import AppShell from "@/components/AppShell.jsx";
 import HomePage from "@/pages/HomePage.jsx";
+import { useT } from "@/i18n";
 
 // 数据页：按需加载，缩减首屏 JS 体量
 const ItemDetailPage = lazy(() => import("@/pages/ItemDetailPage.jsx"));
@@ -14,9 +15,10 @@ const StatsPage = lazy(() => import("@/pages/StatsPage.jsx"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage.jsx"));
 
 function RouteFallback() {
+  const t = useT();
   return (
     <div className="empty" aria-busy="true">
-      <p>正在加载…</p>
+      <p>{t("common.loading")}</p>
     </div>
   );
 }

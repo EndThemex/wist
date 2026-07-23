@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ImagePlus,
@@ -7,26 +7,35 @@ import {
   X,
   Check,
   ChevronDown,
-} from 'lucide-react';
-import { useCatalogStore } from '@/store/useCatalogStore';
-import { blobsRepo, imagesRepo } from '@/lib/repos';
-import { compressImage, formatBytes } from '@/lib/image';
-import { uid } from '@/lib/id';
-import { getDB } from '@/lib/db';
-import Thumb from '@/components/Thumb.jsx';
-import './ItemEditPage.css';
+} from "lucide-react";
+import { useCatalogStore } from "@/store/useCatalogStore";
+import { blobsRepo, imagesRepo } from "@/lib/repos";
+import { compressImage, formatBytes } from "@/lib/image";
+import { uid } from "@/lib/id";
+import { getDB } from "@/lib/db";
+import Thumb from "@/components/Thumb.jsx";
+import { useT } from "@/i18n";
+import "./ItemEditPage.css";
 
 const MAX_IMAGES = 5;
 
 // 各可选分类默认折叠状态：第一次进入只显示名称 + 保存按钮
-const DEFAULT_OPEN = { more: false, images: false, classify: false, tags: false, location: false, note: false };
+const DEFAULT_OPEN = {
+  more: false,
+  images: false,
+  classify: false,
+  tags: false,
+  location: false,
+  note: false,
+};
 
-export default function ItemEditPage({ mode = 'create' }) {
+export default function ItemEditPage({ mode = "create" }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const t = useT();
   // 用户希望创建/编辑完成后回到哪里，支持 ?from= 或 ?to= 显式指定（hash 路径），否则按模式决定
-  const backOverride = searchParams.get('from') || searchParams.get('to');
+  const backOverride = searchParams.get("from") || searchParams.get("to");
   const item = useCatalogStore((s) => s.items.find((it) => it.id === id));
   const groups = useCatalogStore((s) => s.groups);
   const categories = useCatalogStore((s) => s.categories);
@@ -34,25 +43,25 @@ export default function ItemEditPage({ mode = 'create' }) {
   const addItem = useCatalogStore((s) => s.addItem);
   const updateItem = useCatalogStore((s) => s.updateItem);
 
-  const [name, setName] = useState(item?.name || '');
-  const [model, setModel] = useState(item?.model || '');
+  const [name, setName] = useState(item?.name || "");
+  const [model, setModel] = useState(item?.model || "");
   const [price, setPrice] = useState(item?.price ?? 0);
   const [quantity, setQuantity] = useState(item?.quantity ?? 1);
-  const presetGroup = searchParams.get('group') || '';
+  const presetGroup = searchParams.get("group") || "";
   const [groupId, setGroupId] = useState(item?.groupId || presetGroup);
-  const [categoryId, setCategoryId] = useState(item?.categoryId || '');
+  const [categoryId, setCategoryId] = useState(item?.categoryId || "");
   const [tagIds, setTagIds] = useState(item?.tagIds || []);
-  const [location, setLocation] = useState(item?.location || '');
-  const [note, setNote] = useState(item?.note || '');
+  const [location, setLocation] = useState(item?.location || "");
+  const [note, setNote] = useState(item?.note || "");
   const [imageIds, setImageIds] = useState(item?.imageIds || []);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // 折叠状态：默认全折叠；用户首次点开再展开
   const [open, setOpen] = useState(DEFAULT_OPEN);
 
   const [imageMeta, setImageMeta] = useState([]); // [{id, blobId, size, width, height}]
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     // 编辑模式下加载已有图片的 blob 与尺寸
@@ -60,9 +69,9 @@ export default function ItemEditPage({ mode = 'create' }) {
     (async () => {
       const result = [];
       for (const imageId of imageIds) {
-        const row = await getDB().then((db) => db.get('images', imageId));
+        const row = await getDB().then((db) => db.get("images", imageId));
         if (!row) continue;
-        const blob = await getDB().then((db) => db.get('blobs', row.blobId));
+        const blob = await getDB().then((db) => db.get("blobs", row.blobId));
         if (!blob) continue;
         const url = URL.createObjectURL(blob.data);
         const dim = await getDimensions(url);
@@ -74,24 +83,24 @@ export default function ItemEditPage({ mode = 'create' }) {
     return () => {
       cancelled = true;
     };
-  }, [imageIds.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [imageIds.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalCount = imageIds.length;
 
   const goBack = () => {
     if (backOverride) navigate(backOverride);
-    else if (mode === 'edit') navigate(`/items/${id}`);
-    else navigate('/');
+    else if (mode === "edit") navigate(`/items/${id}`);
+    else navigate("/");
   };
 
   const submit = async (e) => {
     e?.preventDefault();
     if (!name.trim()) {
-      setError('名称不能为空');
+      setError(t("edit.error.nameRequired"));
       return;
     }
     setSaving(true);
-    setError('');
+    setError("");
     try {
       const payload = {
         name: name.trim(),
@@ -105,16 +114,16 @@ export default function ItemEditPage({ mode = 'create' }) {
         note: note.trim(),
         imageIds,
       };
-      if (mode === 'create') {
-        const newId = uid('it');
+      if (mode === "create") {
+        const newId = uid("it");
         payload.id = newId;
         // 把挂起图片的 itemId 校正为 newId
         if (imageIds.length > 0) {
           const db = await getDB();
-          const tx = db.transaction('images', 'readwrite');
+          const tx = db.transaction("images", "readwrite");
           for (const iid of imageIds) {
             const row = await tx.store.get(iid);
-            if (row && row.itemId === '__pending__') {
+            if (row && row.itemId === "__pending__") {
               await tx.store.put({ ...row, itemId: newId });
             }
           }
@@ -131,7 +140,7 @@ export default function ItemEditPage({ mode = 'create' }) {
       }
     } catch (err) {
       console.error(err);
-      setError(err?.message || '保存失败');
+      setError(err?.message || t("edit.error.saveFail"));
     } finally {
       setSaving(false);
     }
@@ -139,7 +148,7 @@ export default function ItemEditPage({ mode = 'create' }) {
 
   const onPickImages = async (e) => {
     const files = Array.from(e.target.files || []);
-    e.target.value = '';
+    e.target.value = "";
     if (files.length === 0) return;
     const remain = MAX_IMAGES - imageIds.length;
     if (remain <= 0) return;
@@ -150,56 +159,67 @@ export default function ItemEditPage({ mode = 'create' }) {
         const compressed = await compressImage(file);
         const blobId = await blobsRepo.put(compressed);
         // 在新增模式下，最后保存时会写真正的 itemId；这里把 imageId 与 blobId 关联好但 itemId 可在保存时校正
-        if (mode === 'create') {
+        if (mode === "create") {
           // 占位
-          const imageId = uid('img');
+          const imageId = uid("img");
           const db = await getDB();
-          await db.put('images', { id: imageId, itemId: '__pending__', blobId, order: imageIds.length + newIds.length });
+          await db.put("images", {
+            id: imageId,
+            itemId: "__pending__",
+            blobId,
+            order: imageIds.length + newIds.length,
+          });
           newIds.push(imageId);
         } else {
-          const imageId = await imagesRepo.add(id, blobId, imageIds.length + newIds.length);
+          const imageId = await imagesRepo.add(
+            id,
+            blobId,
+            imageIds.length + newIds.length,
+          );
           newIds.push(imageId);
         }
       } catch (err) {
-        console.error('图片处理失败', err);
+        console.error("图片处理失败", err);
       }
     }
     setImageIds((cur) => [...cur, ...newIds]);
   };
 
   const removeImage = async (imageId) => {
-    if (!window.confirm('删除这张图片？')) return;
+    if (!window.confirm(t("edit.images.confirmRemove"))) return;
     await imagesRepo.remove(imageId);
     setImageIds((cur) => cur.filter((i) => i !== imageId));
   };
 
   const toggleTag = (tagId) => {
-    setTagIds((cur) => (cur.includes(tagId) ? cur.filter((i) => i !== tagId) : [...cur, tagId]));
+    setTagIds((cur) =>
+      cur.includes(tagId) ? cur.filter((i) => i !== tagId) : [...cur, tagId],
+    );
   };
 
   const addTagByName = async (name) => {
-    const t = name.trim();
-    if (!t) return;
-    let tag = tags.find((x) => x.name.toLowerCase() === t.toLowerCase());
+    const tagName = name.trim();
+    if (!tagName) return;
+    let tag = tags.find((x) => x.name.toLowerCase() === tagName.toLowerCase());
     if (!tag) {
-      const newId = await useCatalogStore.getState().addTag({ name: t });
-      tag = { id: newId, name: t };
+      const newId = await useCatalogStore.getState().addTag({ name: tagName });
+      tag = { id: newId, name: tagName };
     }
     setTagIds((cur) => (cur.includes(tag.id) ? cur : [...cur, tag.id]));
   };
 
   const onTagInputKey = (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addTagByName(tagInput);
-      setTagInput('');
+      setTagInput("");
     }
   };
 
   const suggestions = useMemo(() => {
     const kw = tagInput.trim().toLowerCase();
     if (!kw) return [];
-    return tags.filter((t) => t.name.toLowerCase().includes(kw)).slice(0, 6);
+    return tags.filter((tg) => tg.name.toLowerCase().includes(kw)).slice(0, 6);
   }, [tagInput, tags]);
 
   const toggle = (key) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -207,7 +227,9 @@ export default function ItemEditPage({ mode = 'create' }) {
   // 用于折叠头部徽标：显示已填写项的简短摘要
   const filledCounts = {
     images: imageIds.length,
-    more: [model.trim(), price > 0 ? 1 : 0, quantity > 0 ? 1 : 0].filter(Boolean).length,
+    more: [model.trim(), price > 0 ? 1 : 0, quantity > 0 ? 1 : 0].filter(
+      Boolean,
+    ).length,
     classify: [groupId, categoryId].filter(Boolean).length,
     tags: tagIds.length,
     location: location.trim() ? 1 : 0,
@@ -217,12 +239,20 @@ export default function ItemEditPage({ mode = 'create' }) {
   return (
     <form className="edit" onSubmit={submit}>
       <div className="edit-head">
-        <button type="button" className="icon-btn" onClick={goBack} aria-label="返回" title="返回">
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={goBack}
+          aria-label={t("edit.back")}
+          title={t("edit.back")}
+        >
           <ArrowLeft size={18} strokeWidth={1.5} />
-          <span className="icon-btn-label hide-mobile">返回</span>
+          <span className="icon-btn-label hide-mobile">{t("edit.back")}</span>
         </button>
         <h2 className="edit-title mono">
-          {mode === 'create' ? 'NEW · 新增物品' : 'EDIT · 编辑物品'}
+          {mode === "create"
+            ? t("edit.heading.create")
+            : t("edit.heading.edit")}
         </h2>
       </div>
 
@@ -231,13 +261,15 @@ export default function ItemEditPage({ mode = 'create' }) {
       {/* 名称：唯一必填项，常驻展开 */}
       <section className="card-block card-block--primary">
         <div className="field">
-          <label className="label" htmlFor="f-name">名称 *</label>
+          <label className="label" htmlFor="f-name">
+            {t("edit.field.name")} *
+          </label>
           <input
             id="f-name"
             className="input input--lg"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="起个名字开始记录…"
+            placeholder={t("edit.name.placeholder")}
             autoFocus
             required
           />
@@ -246,20 +278,30 @@ export default function ItemEditPage({ mode = 'create' }) {
 
       {/* 图片：可折叠 */}
       <CollapsibleSection
-        title="图片"
+        title={t("edit.section.images")}
         badge={`${totalCount}/${MAX_IMAGES}`}
         open={open.images}
-        onToggle={() => toggle('images')}
+        onToggle={() => toggle("images")}
       >
         <div className="image-grid">
           {imageIds.map((imageId) => (
-            <ImageCell key={imageId} imageId={imageId} onRemove={() => removeImage(imageId)} />
+            <ImageCell
+              key={imageId}
+              imageId={imageId}
+              onRemove={() => removeImage(imageId)}
+            />
           ))}
           {totalCount < MAX_IMAGES && (
             <label className="image-add">
-              <input type="file" accept="image/*" multiple onChange={onPickImages} hidden />
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={onPickImages}
+                hidden
+              />
               <ImagePlus size={20} strokeWidth={1.25} />
-              <span className="mono">添加图片</span>
+              <span className="mono">{t("edit.images.add")}</span>
             </label>
           )}
         </div>
@@ -267,24 +309,32 @@ export default function ItemEditPage({ mode = 'create' }) {
 
       {/* 详细信息：型号 / 价格 / 数量 */}
       <CollapsibleSection
-        title="详细信息"
-        badge={filledCounts.more ? `${filledCounts.more} 项` : '可空'}
+        title={t("edit.section.details")}
+        badge={
+          filledCounts.more
+            ? t("edit.badge.countOf", { n: filledCounts.more })
+            : t("edit.badge.empty")
+        }
         open={open.more}
-        onToggle={() => toggle('more')}
+        onToggle={() => toggle("more")}
       >
         <div className="field">
-          <label className="label" htmlFor="f-model">型号</label>
+          <label className="label" htmlFor="f-model">
+            {t("edit.field.model")}
+          </label>
           <input
             id="f-model"
             className="input"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            placeholder="例如：EF 50mm f/1.8 STM"
+            placeholder={t("edit.model.placeholder")}
           />
         </div>
         <div className="grid-2">
           <div className="field">
-            <label className="label" htmlFor="f-price">价格 (¥)</label>
+            <label className="label" htmlFor="f-price">
+              {t("edit.field.price")} (¥)
+            </label>
             <input
               id="f-price"
               type="number"
@@ -293,11 +343,13 @@ export default function ItemEditPage({ mode = 'create' }) {
               className="input mono"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              placeholder="0.00"
+              placeholder={t("edit.price.placeholder")}
             />
           </div>
           <div className="field">
-            <label className="label" htmlFor="f-qty">数量</label>
+            <label className="label" htmlFor="f-qty">
+              {t("edit.field.quantity")}
+            </label>
             <input
               id="f-qty"
               type="number"
@@ -306,7 +358,7 @@ export default function ItemEditPage({ mode = 'create' }) {
               className="input mono"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              placeholder="1"
+              placeholder={t("edit.qty.placeholder")}
             />
           </div>
         </div>
@@ -314,16 +366,24 @@ export default function ItemEditPage({ mode = 'create' }) {
 
       {/* 分类 / 分组 */}
       <CollapsibleSection
-        title="分类与分组"
-        badge={filledCounts.classify ? `已选 ${filledCounts.classify}` : '可空'}
+        title={t("edit.section.classify")}
+        badge={
+          filledCounts.classify
+            ? t("edit.badge.chosen", { n: filledCounts.classify })
+            : t("edit.badge.empty")
+        }
         open={open.classify}
-        onToggle={() => toggle('classify')}
+        onToggle={() => toggle("classify")}
       >
         <div className="grid-2">
           <div className="field">
-            <label className="label">分组</label>
-            <select className="select" value={groupId} onChange={(e) => setGroupId(e.target.value)}>
-              <option value="">无</option>
+            <label className="label">{t("nav.groups")}</label>
+            <select
+              className="select"
+              value={groupId}
+              onChange={(e) => setGroupId(e.target.value)}
+            >
+              <option value="">{t("edit.group.none")}</option>
               {groups.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name}
@@ -332,9 +392,13 @@ export default function ItemEditPage({ mode = 'create' }) {
             </select>
           </div>
           <div className="field">
-            <label className="label">分类</label>
-            <select className="select" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-              <option value="">无</option>
+            <label className="label">{t("nav.categories")}</label>
+            <select
+              className="select"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">{t("edit.category.none")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -347,19 +411,26 @@ export default function ItemEditPage({ mode = 'create' }) {
 
       {/* 标签 */}
       <CollapsibleSection
-        title="标签"
-        badge={filledCounts.tags ? `${filledCounts.tags}` : '可空'}
+        title={t("edit.section.tags")}
+        badge={
+          filledCounts.tags ? `${filledCounts.tags}` : t("edit.badge.empty")
+        }
         open={open.tags}
-        onToggle={() => toggle('tags')}
+        onToggle={() => toggle("tags")}
       >
         <div className="tag-input-row">
           {tagIds.length > 0 &&
             tagIds.map((tid) => {
-              const t = tags.find((x) => x.id === tid);
-              if (!t) return null;
+              const tg = tags.find((x) => x.id === tid);
+              if (!tg) return null;
               return (
-                <span key={tid} className="tag chip-on" onClick={() => toggleTag(tid)} role="button">
-                  #{t.name} <X size={11} strokeWidth={2} />
+                <span
+                  key={tid}
+                  className="tag chip-on"
+                  onClick={() => toggleTag(tid)}
+                  role="button"
+                >
+                  #{tg.name} <X size={11} strokeWidth={2} />
                 </span>
               );
             })}
@@ -368,14 +439,19 @@ export default function ItemEditPage({ mode = 'create' }) {
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={onTagInputKey}
-            placeholder="输入标签名后回车"
+            placeholder={t("edit.tag.placeholder")}
           />
         </div>
         {suggestions.length > 0 && (
           <div className="tag-suggest">
-            {suggestions.map((t) => (
-              <button type="button" key={t.id} className="chip" onClick={() => addTagByName(t.name)}>
-                #{t.name}
+            {suggestions.map((tg) => (
+              <button
+                type="button"
+                key={tg.id}
+                className="chip"
+                onClick={() => addTagByName(tg.name)}
+              >
+                #{tg.name}
               </button>
             ))}
           </div>
@@ -383,11 +459,16 @@ export default function ItemEditPage({ mode = 'create' }) {
         {tags.length > 0 && (
           <div className="tag-suggest">
             {tags
-              .filter((t) => !tagIds.includes(t.id))
+              .filter((tg) => !tagIds.includes(tg.id))
               .slice(0, 12)
-              .map((t) => (
-                <button type="button" key={t.id} className="chip" onClick={() => addTagByName(t.name)}>
-                  + #{t.name}
+              .map((tg) => (
+                <button
+                  type="button"
+                  key={tg.id}
+                  className="chip"
+                  onClick={() => addTagByName(tg.name)}
+                >
+                  + #{tg.name}
                 </button>
               ))}
           </div>
@@ -396,10 +477,12 @@ export default function ItemEditPage({ mode = 'create' }) {
 
       {/* 位置 */}
       <CollapsibleSection
-        title="存放位置"
-        badge={filledCounts.location ? '已填' : '可空'}
+        title={t("edit.section.location")}
+        badge={
+          filledCounts.location ? t("edit.badge.filled") : t("edit.badge.empty")
+        }
         open={open.location}
-        onToggle={() => toggle('location')}
+        onToggle={() => toggle("location")}
       >
         <div className="field">
           <input
@@ -407,17 +490,19 @@ export default function ItemEditPage({ mode = 'create' }) {
             className="input"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="例如：客厅第二个抽屉"
+            placeholder={t("edit.location.placeholder")}
           />
         </div>
       </CollapsibleSection>
 
       {/* 备注 */}
       <CollapsibleSection
-        title="备注"
-        badge={filledCounts.note ? '已填' : '可空'}
+        title={t("edit.section.note")}
+        badge={
+          filledCounts.note ? t("edit.badge.filled") : t("edit.badge.empty")
+        }
         open={open.note}
-        onToggle={() => toggle('note')}
+        onToggle={() => toggle("note")}
       >
         <div className="field">
           <textarea
@@ -426,7 +511,7 @@ export default function ItemEditPage({ mode = 'create' }) {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={4}
-            placeholder="任何附加信息，例如购买渠道、保修期…"
+            placeholder={t("edit.note.placeholder")}
           />
         </div>
       </CollapsibleSection>
@@ -435,18 +520,27 @@ export default function ItemEditPage({ mode = 'create' }) {
       <div className="edit-bottom-spacer" aria-hidden />
 
       {/* 始终可见的保存栏：固定在视口底部，方便随时保存 */}
-      <div className="save-bar" role="region" aria-label="保存操作">
-        <button type="button" className="btn btn-ghost save-bar__cancel" onClick={goBack} disabled={saving}>
-          取消
+      <div className="save-bar" role="region" aria-label={t("edit.save")}>
+        <button
+          type="button"
+          className="btn btn-ghost save-bar__cancel"
+          onClick={goBack}
+          disabled={saving}
+        >
+          {t("edit.cancel")}
         </button>
-        <button type="submit" className="btn save-bar__save" disabled={saving || !name.trim()}>
+        <button
+          type="submit"
+          className="btn save-bar__save"
+          disabled={saving || !name.trim()}
+        >
           {saving ? (
             <>
-              <Loader2 size={16} className="spin" /> 保存中…
+              <Loader2 size={16} className="spin" /> {t("edit.saving")}
             </>
           ) : (
             <>
-              <Check size={16} strokeWidth={1.75} /> 保存
+              <Check size={16} strokeWidth={1.75} /> {t("edit.save")}
             </>
           )}
         </button>
@@ -457,7 +551,7 @@ export default function ItemEditPage({ mode = 'create' }) {
 
 function CollapsibleSection({ title, badge, open, onToggle, children }) {
   return (
-    <section className={`card-block collapsible${open ? ' open' : ''}`}>
+    <section className={`card-block collapsible${open ? " open" : ""}`}>
       <button
         type="button"
         className="collapsible-head"
@@ -466,7 +560,12 @@ function CollapsibleSection({ title, badge, open, onToggle, children }) {
       >
         <span className="collapsible-title">{title}</span>
         <span className="collapsible-badge mono subtle">{badge}</span>
-        <ChevronDown size={16} strokeWidth={1.5} className="collapsible-caret" aria-hidden />
+        <ChevronDown
+          size={16}
+          strokeWidth={1.5}
+          className="collapsible-caret"
+          aria-hidden
+        />
       </button>
       {open && <div className="collapsible-body">{children}</div>}
     </section>
@@ -476,13 +575,15 @@ function CollapsibleSection({ title, badge, open, onToggle, children }) {
 function getDimensions(url) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onload = () =>
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
     img.onerror = () => resolve({ width: 0, height: 0 });
     img.src = url;
   });
 }
 
 function ImageCell({ imageId, onRemove }) {
+  const t = useT();
   const [blobId, setBlobId] = useState(null);
   const [size, setSize] = useState(null);
 
@@ -490,10 +591,10 @@ function ImageCell({ imageId, onRemove }) {
     let cancelled = false;
     (async () => {
       const db = await getDB();
-      const row = await db.get('images', imageId);
+      const row = await db.get("images", imageId);
       if (!row) return;
       setBlobId(row.blobId);
-      const blob = await db.get('blobs', row.blobId);
+      const blob = await db.get("blobs", row.blobId);
       if (!cancelled && blob) setSize(blob.data.size);
     })();
     return () => {
@@ -504,10 +605,17 @@ function ImageCell({ imageId, onRemove }) {
   return (
     <div className="image-cell">
       <Thumb blobId={blobId} className="image-cell-img" />
-      <button type="button" className="image-remove" aria-label="删除" onClick={onRemove}>
+      <button
+        type="button"
+        className="image-remove"
+        aria-label={t("common.delete")}
+        onClick={onRemove}
+      >
         <X size={14} strokeWidth={1.5} />
       </button>
-      {size && <div className="image-size mono subtle">{formatBytes(size)}</div>}
+      {size && (
+        <div className="image-size mono subtle">{formatBytes(size)}</div>
+      )}
     </div>
   );
 }

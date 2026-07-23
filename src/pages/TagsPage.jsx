@@ -1,5 +1,5 @@
-import ManagePage from '@/pages/ManagePage.jsx';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import ManagePage from "@/pages/ManagePage.jsx";
+import { useCatalogStore } from "@/store/useCatalogStore";
 
 export default function TagsPage() {
   const tags = useCatalogStore((s) => s.tags);
@@ -10,14 +10,18 @@ export default function TagsPage() {
 
   return (
     <ManagePage
-      title="标签"
-      hint="标签是细粒度的标记，多个物品可共用，例如「易碎」「借出中」。"
+      titleKey="nav.tags"
+      hintKey="manage.tags.hint"
+      emptyTitleKey="manage.empty"
+      typeKey="nav.tags"
       items={tags}
-      fields={['name']}
+      fields={["name"]}
       onAdd={(d) => addTag(d)}
       onUpdate={(id, patch) => updateTag(id, patch)}
       onRemove={(id) => removeTag(id)}
-      renderCount={(t) => items.filter((it) => (it.tagIds || []).includes(t.id)).length}
+      renderCount={(tg) =>
+        items.filter((it) => (it.tagIds || []).includes(tg.id)).length
+      }
     />
   );
 }

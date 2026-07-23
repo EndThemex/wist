@@ -1,5 +1,5 @@
-import { memo, useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { memo, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Search,
   LayoutGrid,
@@ -9,23 +9,25 @@ import {
   FolderTree,
   Layers,
   Tag as TagIcon,
-} from 'lucide-react';
-import { useCatalogStore } from '@/store/useCatalogStore';
-import { usePrefsStore } from '@/store/usePrefsStore';
-import Empty from '@/components/Empty.jsx';
-import Thumb from '@/components/Thumb.jsx';
-import MultiSelect from '@/components/MultiSelect.jsx';
-import { getDB } from '@/lib/db';
-import { newItemLink } from '@/lib/url';
-import './ItemsListPage.css';
+} from "lucide-react";
+import { useCatalogStore } from "@/store/useCatalogStore";
+import { usePrefsStore } from "@/store/usePrefsStore";
+import Empty from "@/components/Empty.jsx";
+import Thumb from "@/components/Thumb.jsx";
+import MultiSelect from "@/components/MultiSelect.jsx";
+import { getDB } from "@/lib/db";
+import { newItemLink } from "@/lib/url";
+import { useT, useLocale } from "@/i18n";
+import "./ItemsListPage.css";
 
-const SORT_OPTIONS = [
-  { v: 'newest', label: '最新' },
-  { v: 'oldest', label: '最旧' },
-  { v: 'name', label: '名称 A→Z' },
-  { v: 'priceDesc', label: '价格 高→低' },
-  { v: 'priceAsc', label: '价格 低→高' },
-  { v: 'qtyDesc', label: '数量 多→少' },
+// 排序选项 label 由 i18n 在组件内注入
+const SORT_KEYS = [
+  { v: "newest", labelKey: "items.sort.newest" },
+  { v: "oldest", labelKey: "items.sort.oldest" },
+  { v: "name", labelKey: "items.sort.name" },
+  { v: "priceDesc", labelKey: "items.sort.priceDesc" },
+  { v: "priceAsc", labelKey: "items.sort.priceAsc" },
+  { v: "qtyDesc", labelKey: "items.sort.qtyDesc" },
 ];
 
 export default function ItemsListPage() {
@@ -48,11 +50,22 @@ export default function ItemsListPage() {
   const setSort = usePrefsStore((s) => s.setSort);
   const setView = usePrefsStore((s) => s.setView);
 
+  const t = useT();
+  const lang = useLocale();
   const navigate = useNavigate();
 
-  const groupMap = useMemo(() => Object.fromEntries(groups.map((g) => [g.id, g])), [groups]);
-  const categoryMap = useMemo(() => Object.fromEntries(categories.map((c) => [c.id, c])), [categories]);
-  const tagMap = useMemo(() => Object.fromEntries(tags.map((t) => [t.id, t])), [tags]);
+  const groupMap = useMemo(
+    () => Object.fromEntries(groups.map((g) => [g.id, g])),
+    [groups],
+  );
+  const categoryMap = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.id, c])),
+    [categories],
+  );
+  const tagMap = useMemo(
+    () => Object.fromEntries(tags.map((t) => [t.id, t])),
+    [tags],
+  );
 
   // 搜索值走 useDeferredValue：输入流畅，过滤延后到空闲时执行
   const deferredQ = useDeferredValue(q);
@@ -75,8 +88,8 @@ export default function ItemsListPage() {
     const cSet = new Set(categoryIds);
     const tSet = new Set(tagIds);
     let arr = items.filter((it) => {
-      if (gSet.size > 0 && !gSet.has(it.groupId || '')) return false;
-      if (cSet.size > 0 && !cSet.has(it.categoryId || '')) return false;
+      if (gSet.size > 0 && !gSet.has(it.groupId || "")) return false;
+      if (cSet.size > 0 && !cSet.has(it.categoryId || "")) return false;
       if (tSet.size > 0) {
         const its = new Set(it.tagIds || []);
         for (const id of tSet) {
@@ -84,37 +97,52 @@ export default function ItemsListPage() {
         }
       }
       if (!kw) return true;
-      const tagNames = (it.tagIds || []).map((id) => tagMap[id]?.name || '').join(' ');
-      const hay = [it.name, it.model, it.location, it.note, tagNames].join(' ').toLowerCase();
+      const tagNames = (it.tagIds || [])
+        .map((id) => tagMap[id]?.name || "")
+        .join(" ");
+      const hay = [it.name, it.model, it.location, it.note, tagNames]
+        .join(" ")
+        .toLowerCase();
       return hay.includes(kw);
     });
     arr = arr.slice();
+    // 名称排序：中文按拼音 / 英文按字母，用当前语言对应的 locale
+    const nameLocale = lang === "zh" ? "zh" : "en";
     switch (sort) {
-      case 'newest':
-        arr.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      case "newest":
+        arr.sort((a, b) =>
+          (b.createdAt || "").localeCompare(a.createdAt || ""),
+        );
         break;
-      case 'oldest':
-        arr.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+      case "oldest":
+        arr.sort((a, b) =>
+          (a.createdAt || "").localeCompare(b.createdAt || ""),
+        );
         break;
-      case 'name':
-        arr.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'zh'));
+      case "name":
+        arr.sort((a, b) =>
+          (a.name || "").localeCompare(b.name || "", nameLocale),
+        );
         break;
-      case 'priceDesc':
+      case "priceDesc":
         arr.sort((a, b) => (b.price || 0) - (a.price || 0));
         break;
-      case 'priceAsc':
+      case "priceAsc":
         arr.sort((a, b) => (a.price || 0) - (b.price || 0));
         break;
-      case 'qtyDesc':
+      case "qtyDesc":
         arr.sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
         break;
       default:
         break;
     }
     return arr;
-  }, [items, deferredQ, groupIds, categoryIds, tagIds, sort, tagMap]);
+  }, [items, deferredQ, groupIds, categoryIds, tagIds, sort, tagMap, lang]);
 
-  const hasActiveFilter = groupIds.length + categoryIds.length + tagIds.length > 0;
+  const hasActiveFilter =
+    groupIds.length + categoryIds.length + tagIds.length > 0;
+  const viewLabel =
+    view === "grid" ? t("items.viewToggle.list") : t("items.viewToggle.grid");
 
   return (
     <div className="items-page">
@@ -124,10 +152,10 @@ export default function ItemsListPage() {
             <Search size={16} strokeWidth={1.5} />
             <input
               className="search-input"
-              placeholder="搜索名称、型号、标签、位置…"
+              placeholder={t("items.search.placeholder")}
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              aria-label="搜索"
+              aria-label={t("items.search.ariaLabel")}
             />
           </div>
         </div>
@@ -135,17 +163,26 @@ export default function ItemsListPage() {
           <button
             type="button"
             className="icon-btn"
-            onClick={() => setView(view === 'grid' ? 'list' : 'grid')}
-            aria-label="切换视图"
-            title="切换视图"
+            onClick={() => setView(view === "grid" ? "list" : "grid")}
+            aria-label={t("items.viewToggle.list")}
+            title={t("items.viewToggle.list")}
           >
-            {view === 'grid' ? <Rows3 size={16} strokeWidth={1.5} /> : <LayoutGrid size={16} strokeWidth={1.5} />}
-            <span className="icon-btn-label">{view === 'grid' ? '列表' : '网格'}</span>
+            {view === "grid" ? (
+              <Rows3 size={16} strokeWidth={1.5} />
+            ) : (
+              <LayoutGrid size={16} strokeWidth={1.5} />
+            )}
+            <span className="icon-btn-label">{viewLabel}</span>
           </button>
-          <select className="filters-controls__sort" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="排序">
-            {SORT_OPTIONS.map((o) => (
+          <select
+            className="filters-controls__sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            aria-label={t("items.sort.ariaLabel")}
+          >
+            {SORT_KEYS.map((o) => (
               <option key={o.v} value={o.v}>
-                {o.label}
+                {t(o.labelKey)}
               </option>
             ))}
           </select>
@@ -155,9 +192,13 @@ export default function ItemsListPage() {
             <MultiSelect
               value={groupIds}
               onChange={setGroupIds}
-              options={groups.map((g) => ({ id: g.id, name: g.name, hint: groupCounts[g.id] }))}
-              placeholder="全部分组"
-              ariaLabel="筛选分组"
+              options={groups.map((g) => ({
+                id: g.id,
+                name: g.name,
+                hint: groupCounts[g.id],
+              }))}
+              placeholder={t("items.filter.allGroups")}
+              ariaLabel={t("items.filter.allGroups")}
             />
           </div>
           <div className="filters-select">
@@ -165,18 +206,18 @@ export default function ItemsListPage() {
               value={categoryIds}
               onChange={setCategoryIds}
               options={categories.map((c) => ({ id: c.id, name: c.name }))}
-              placeholder="全部分类"
-              ariaLabel="筛选分类"
+              placeholder={t("items.filter.allCategories")}
+              ariaLabel={t("items.filter.allCategories")}
             />
           </div>
           <div className="filters-select">
             <MultiSelect
               value={tagIds}
               onChange={setTagIds}
-              options={tags.map((t) => ({ id: t.id, name: t.name }))}
-              placeholder="全部标签"
+              options={tags.map((t2) => ({ id: t2.id, name: t2.name }))}
+              placeholder={t("items.filter.allTags")}
               prefix="#"
-              ariaLabel="筛选标签"
+              ariaLabel={t("items.filter.allTags")}
             />
           </div>
           {hasActiveFilter && (
@@ -189,45 +230,53 @@ export default function ItemsListPage() {
                 setTagIds([]);
               }}
             >
-              清除
+              {t("items.filter.clear")}
             </button>
           )}
         </div>
       </div>
 
       <div className="result-meta mono subtle">
-        共 {filtered.length} 项 / 总 {items.length}
+        {t("items.result", { count: filtered.length, total: items.length })}
       </div>
 
       <div className="manage-entries">
         <Link to="/groups" className="manage-entry">
           <FolderTree size={14} strokeWidth={1.5} />
-          <span>管理分组</span>
+          <span>{t("items.manageGroups")}</span>
         </Link>
         <Link to="/categories" className="manage-entry">
           <Layers size={14} strokeWidth={1.5} />
-          <span>管理分类</span>
+          <span>{t("items.manageCategories")}</span>
         </Link>
         <Link to="/tags" className="manage-entry">
           <TagIcon size={14} strokeWidth={1.5} />
-          <span>管理标签</span>
+          <span>{t("items.manageTags")}</span>
         </Link>
       </div>
 
       {filtered.length === 0 ? (
         <Empty
-          title={items.length === 0 ? '还没有物品' : '没有匹配的物品'}
-          hint={items.length === 0 ? '点击右下方 + 开始记录第一个物品' : '试试调整搜索词或筛选条件'}
+          title={
+            items.length === 0
+              ? "items.empty.title"
+              : "items.emptyFiltered.title"
+          }
+          hint={
+            items.length === 0
+              ? t("items.empty.hint")
+              : t("items.emptyFiltered.hint")
+          }
           action={
             items.length === 0 ? (
               <Link to={newItemLink()} className="btn">
                 <Plus size={16} />
-                &nbsp;新增物品
+                &nbsp;{t("items.empty.action")}
               </Link>
             ) : null
           }
         />
-      ) : view === 'grid' ? (
+      ) : view === "grid" ? (
         <div className="item-grid">
           {filtered.map((it) => (
             <ItemCard
@@ -237,6 +286,8 @@ export default function ItemsListPage() {
               category={categoryMap[it.categoryId]}
               tags={(it.tagIds || []).map((id) => tagMap[id]).filter(Boolean)}
               blobId={firstBlobIds[it.id]}
+              priceLabel={formatPrice(it.price)}
+              qtyLabel={t("items.qty", { n: it.quantity })}
             />
           ))}
         </div>
@@ -249,6 +300,8 @@ export default function ItemsListPage() {
               group={groupMap[it.groupId]}
               category={categoryMap[it.categoryId]}
               blobId={firstBlobIds[it.id]}
+              priceLabel={formatPrice(it.price)}
+              qtyLabel={t("items.qty", { n: it.quantity })}
             />
           ))}
         </div>
@@ -257,33 +310,49 @@ export default function ItemsListPage() {
   );
 }
 
-const ItemCard = memo(function ItemCard({ item, group, category, tags, blobId }) {
+const ItemCard = memo(function ItemCard({
+  item,
+  group,
+  category,
+  tags,
+  blobId,
+  priceLabel,
+  qtyLabel,
+}) {
   const navigate = useNavigate();
   const hasImage = (item.imageIds || []).length > 0;
   return (
     <article
-      className={`item-card${hasImage ? '' : ' no-image'}`}
+      className={`item-card${hasImage ? "" : " no-image"}`}
       onClick={() => navigate(`/items/${item.id}`)}
       role="link"
       tabIndex={0}
-      onKeyDown={(e) => (e.key === 'Enter' ? navigate(`/items/${item.id}`) : null)}
+      onKeyDown={(e) =>
+        e.key === "Enter" ? navigate(`/items/${item.id}`) : null
+      }
     >
       {hasImage && <Thumb blobId={blobId} className="thumb" alt="" />}
       <div className="item-card-body">
         <div className="item-title">
           <span className="ellipsis-1">{item.name}</span>
-          <span className="qty mono">×{item.quantity}</span>
+          <span className="qty mono">{qtyLabel}</span>
         </div>
-        {item.model && <div className="muted ellipsis-1" style={{ fontSize: 12 }}>{item.model}</div>}
+        {item.model && (
+          <div className="muted ellipsis-1" style={{ fontSize: 12 }}>
+            {item.model}
+          </div>
+        )}
         <div className="meta">
           {group && <span className="tag">{group.name}</span>}
           {category && <span className="tag">{category.name}</span>}
-          {tags.slice(0, 3).map((t) => (
-            <span key={t.id} className="tag">#{t.name}</span>
+          {tags.slice(0, 3).map((t2) => (
+            <span key={t2.id} className="tag">
+              #{t2.name}
+            </span>
           ))}
         </div>
         <div className="footer">
-          <span className="price mono">{formatPrice(item.price)}</span>
+          <span className="price mono">{priceLabel}</span>
           {item.location && (
             <span className="loc mono ellipsis-1">
               <MapPin size={12} strokeWidth={1.5} /> {item.location}
@@ -295,7 +364,14 @@ const ItemCard = memo(function ItemCard({ item, group, category, tags, blobId })
   );
 });
 
-const ItemRow = memo(function ItemRow({ item, group, category, blobId }) {
+const ItemRow = memo(function ItemRow({
+  item,
+  group,
+  category,
+  blobId,
+  priceLabel,
+  qtyLabel,
+}) {
   const navigate = useNavigate();
   return (
     <div className="item-row" onClick={() => navigate(`/items/${item.id}`)}>
@@ -311,20 +387,32 @@ const ItemRow = memo(function ItemRow({ item, group, category, blobId }) {
       <div className="row-main">
         <div className="row-line1">
           <span className="ellipsis-1">{item.name}</span>
-          <span className="qty mono">×{item.quantity}</span>
+          <span className="qty mono">{qtyLabel}</span>
         </div>
         <div className="muted ellipsis-1" style={{ fontSize: 12 }}>
-          {[group?.name, category?.name, item.location].filter(Boolean).join(' · ')}
+          {[group?.name, category?.name, item.location]
+            .filter(Boolean)
+            .join(" · ")}
         </div>
       </div>
-      <div className="row-end mono">{formatPrice(item.price)}</div>
+      <div className="row-end mono">{priceLabel}</div>
     </div>
   );
 });
 
 function PackageIcon(props) {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <path d="m7.5 4.27 9 5.15" />
       <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
       <path d="m3.3 7 7.7 4.4 7.7-4.4" />
@@ -345,8 +433,8 @@ function useFirstBlobIds(items) {
     (async () => {
       try {
         const db = await getDB();
-        const tx = db.transaction('images', 'readonly');
-        const store = tx.objectStore('images');
+        const tx = db.transaction("images", "readonly");
+        const store = tx.objectStore("images");
         const out = {};
         await Promise.all(
           items.map(async (it) => {
@@ -369,9 +457,19 @@ function useFirstBlobIds(items) {
   return map;
 }
 
+// 价格 / 货币：跟随当前 locale，英文用 $，中文保留 ¥ 占位符
+// 实际生产应支持多币种，目前先用硬编码 + 当前 locale 的 Intl
 function formatPrice(p) {
-  if (!p) return '—';
+  if (p == null || p === "") return "—";
   const n = Number(p);
-  if (!Number.isFinite(n)) return '—';
-  return `¥ ${n.toFixed(2)}`;
+  if (!Number.isFinite(n)) return "—";
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: "CNY",
+      minimumFractionDigits: 2,
+    }).format(n);
+  } catch (_) {
+    return `¥ ${n.toFixed(2)}`;
+  }
 }

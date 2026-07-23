@@ -1,116 +1,126 @@
-import { useRef, useState } from 'react';
-import { Download, Upload, Trash2 } from 'lucide-react';
-import { useThemeStore } from '@/store/useThemeStore';
-import { useCatalogStore } from '@/store/useCatalogStore';
-import { clearAll, describePayload, exportDB, EXPORT_VERSION, importDB } from '@/lib/db';
-import './SettingsPage.css';
+import { useRef, useState } from "react";
+import { Download, Upload, Trash2 } from "lucide-react";
+import { useThemeStore } from "@/store/useThemeStore";
+import { useCatalogStore } from "@/store/useCatalogStore";
+import {
+  clearAll,
+  describePayload,
+  exportDB,
+  EXPORT_VERSION,
+  importDB,
+} from "@/lib/db";
+import { useT, useLocale, setLocale, SUPPORTED_LOCALES } from "@/i18n";
+import "./SettingsPage.css";
 
 export default function SettingsPage() {
   const themeMode = useThemeStore((s) => s.mode);
   const setTheme = useThemeStore((s) => s.set);
   const refresh = useCatalogStore((s) => s.refresh);
   const fileRef = useRef(null);
-  const [busy, setBusy] = useState('');
+  const [busy, setBusy] = useState("");
+  const t = useT();
+  const lang = useLocale();
 
   const onExport = async () => {
-    setBusy('正在导出…');
+    setBusy(t("settings.data.exporting"));
     try {
       const data = await exportDB();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `where-is-it-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {
-      setBusy('');
+      setBusy("");
     }
   };
 
   const onImport = async (e) => {
     const file = e.target.files?.[0];
-    e.target.value = '';
+    e.target.value = "";
     if (!file) return;
     let json;
     try {
       const text = await file.text();
       json = JSON.parse(text);
     } catch (_) {
-      alert('导入失败：文件不是有效的 JSON');
+      alert(t("settings.data.importNotJson"));
       return;
     }
 
     // 解析并显示备份描述，按版本判断是否需要迁移或拒绝
     const desc = describePayload(json);
-    const fmtV = typeof json?.formatVersion === 'number' ? json.formatVersion : null;
-    let confirmHint = '导入将清空当前所有数据，确定继续？';
+    const fmtV = typeof json?.formatVersion === "number" ? json.formatVersion : null;
+    let confirmHint = t("settings.data.confirmImport", { app: "?", ver: "?" }).split("\n")[1] || "";
     if (desc) {
       const versionNote =
         fmtV == null
-          ? '（未声明版本，将作为 v1 处理）'
+          ? t("settings.data.unknownVersion", { to: EXPORT_VERSION })
           : fmtV < EXPORT_VERSION
-          ? `（将自动从 v${fmtV} 迁移到 v${EXPORT_VERSION}）`
+          ? t("settings.data.migrateFromV", { from: fmtV, to: EXPORT_VERSION })
           : fmtV > EXPORT_VERSION
-          ? ''
-          : '';
-      confirmHint = `备份来源：${desc.app} ${desc.version}${versionNote ? ' ' + versionNote : ''}\n` + confirmHint;
+          ? ""
+          : "";
+      confirmHint = t("settings.data.confirmImport", { app: desc.app, ver: desc.version })
+        + (versionNote ? "\n" + versionNote : "");
       if (fmtV != null && fmtV > EXPORT_VERSION) {
-        alert(`无法导入：备份文件版本（v${fmtV}）高于当前应用支持版本（v${EXPORT_VERSION}）。请升级应用后重试。`);
+        alert(t("settings.data.versionTooNew", { found: fmtV, supported: EXPORT_VERSION }));
         return;
       }
     }
 
     if (!window.confirm(confirmHint)) return;
-    setBusy('正在导入…');
+    setBusy(t("settings.data.importing"));
     try {
       await importDB(json);
       await refresh();
-      alert('导入完成');
+      alert(t("settings.data.importOk"));
     } catch (err) {
-      alert('导入失败：' + (err?.message || '未知错误'));
+      alert(t("settings.data.importFail", { msg: err?.message || "" }));
     } finally {
-      setBusy('');
+      setBusy("");
     }
   };
 
   const onClear = async () => {
-    if (!window.confirm('将永久删除所有数据（物品、图片、分组等），不可恢复。继续？')) return;
-    setBusy('正在清空…');
+    if (!window.confirm(t("settings.data.clearConfirm"))) return;
+    setBusy(t("settings.data.clearing"));
     try {
       await clearAll();
       await refresh();
     } finally {
-      setBusy('');
+      setBusy("");
     }
   };
 
   return (
     <div className="settings">
       <header className="settings-head">
-        <h2>设置</h2>
+        <h2>{t("settings.title")}</h2>
       </header>
 
       <section className="settings-block">
         <div className="settings-label">
-          <h3>主题</h3>
-          <p className="muted">切换亮色、暗色或跟随系统。</p>
+          <h3>{t("settings.section.theme")}</h3>
+          <p className="muted">{t("settings.theme.hint")}</p>
         </div>
-        <div className="segmented" role="radiogroup" aria-label="主题切换">
+        <div className="segmented" role="radiogroup" aria-label={t("settings.section.theme")}>
           {[
-            { v: 'light', label: '亮色' },
-            { v: 'dark', label: '暗色' },
-            { v: 'system', label: '跟随系统' },
+            { v: "light", labelKey: "settings.theme.light" },
+            { v: "dark", labelKey: "settings.theme.dark" },
+            { v: "system", labelKey: "settings.theme.system" },
           ].map((o) => (
             <button
               key={o.v}
               type="button"
               role="radio"
               aria-checked={themeMode === o.v}
-              className={`segmented-opt${themeMode === o.v ? ' on' : ''}`}
+              className={`segmented-opt${themeMode === o.v ? " on" : ""}`}
               onClick={() => setTheme(o.v)}
             >
-              {o.label}
+              {t(o.labelKey)}
             </button>
           ))}
         </div>
@@ -118,19 +128,40 @@ export default function SettingsPage() {
 
       <section className="settings-block">
         <div className="settings-label">
-          <h3>数据</h3>
-          <p className="muted">导出为 JSON 文件以备份，或从备份恢复。</p>
+          <h3>{t("settings.section.lang")}</h3>
+          <p className="muted">{t("settings.lang.hint")}</p>
+        </div>
+        <div className="segmented" role="radiogroup" aria-label={t("settings.section.lang")}>
+          {SUPPORTED_LOCALES.map((o) => (
+            <button
+              key={o.code}
+              type="button"
+              role="radio"
+              aria-checked={lang === o.code}
+              className={`segmented-opt${lang === o.code ? " on" : ""}`}
+              onClick={() => setLocale(o.code)}
+            >
+              {t(o.labelKey)}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="settings-block">
+        <div className="settings-label">
+          <h3>{t("settings.section.data")}</h3>
+          <p className="muted">{t("settings.data.hint")}</p>
         </div>
         <div className="settings-actions">
           <button className="btn btn-ghost" onClick={onExport} disabled={!!busy}>
-            <Download size={14} strokeWidth={1.5} /> &nbsp;导出 JSON
+            <Download size={14} strokeWidth={1.5} /> &nbsp;{t("settings.data.export")}
           </button>
           <button className="btn btn-ghost" onClick={() => fileRef.current?.click()} disabled={!!busy}>
-            <Upload size={14} strokeWidth={1.5} /> &nbsp;导入 JSON
+            <Upload size={14} strokeWidth={1.5} /> &nbsp;{t("settings.data.import")}
           </button>
           <input ref={fileRef} type="file" accept="application/json" hidden onChange={onImport} />
           <button className="btn btn-danger" onClick={onClear} disabled={!!busy}>
-            <Trash2 size={14} strokeWidth={1.5} /> &nbsp;清空全部
+            <Trash2 size={14} strokeWidth={1.5} /> &nbsp;{t("settings.data.clear")}
           </button>
         </div>
         {busy && <div className="muted mono" style={{ marginTop: 8 }}>{busy}</div>}
@@ -138,10 +169,10 @@ export default function SettingsPage() {
 
       <section className="settings-block">
         <div className="settings-label">
-          <h3>关于</h3>
+          <h3>{t("settings.section.about")}</h3>
         </div>
-        <p className="mono subtle">Where is it · 本地优先的物品清单工具</p>
-        <p className="mono subtle">数据完全保存在你的浏览器 IndexedDB 中，无云端、无追踪。</p>
+        <p className="mono subtle">{t("settings.about.line1")}</p>
+        <p className="mono subtle">{t("settings.about.line2")}</p>
       </section>
     </div>
   );

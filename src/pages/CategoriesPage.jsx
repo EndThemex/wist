@@ -1,5 +1,5 @@
-import ManagePage from '@/pages/ManagePage.jsx';
-import { useCatalogStore } from '@/store/useCatalogStore';
+import ManagePage from "@/pages/ManagePage.jsx";
+import { useCatalogStore } from "@/store/useCatalogStore";
 
 export default function CategoriesPage() {
   const categories = useCatalogStore((s) => s.categories);
@@ -10,10 +10,12 @@ export default function CategoriesPage() {
 
   return (
     <ManagePage
-      title="分类"
-      hint="比分组更宽泛的维度，例如「电子」「书籍」。"
+      titleKey="nav.categories"
+      hintKey="manage.categories.hint"
+      emptyTitleKey="manage.empty"
+      typeKey="nav.categories"
       items={categories}
-      fields={['name']}
+      fields={["name"]}
       onAdd={(d) => addCategory(d)}
       onUpdate={(id, patch) => updateCategory(id, patch)}
       onRemove={(id) => removeCategory(id)}

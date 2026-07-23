@@ -16,6 +16,7 @@ import {
 import { useCatalogStore } from "@/store/useCatalogStore";
 import { newItemLink } from "@/lib/url";
 import ItemsListPage from "@/pages/ItemsListPage.jsx";
+import { useT } from "@/i18n";
 import "./HomePage.css";
 
 export default function HomePage() {
@@ -23,6 +24,7 @@ export default function HomePage() {
   const groups = useCatalogStore((s) => s.groups);
   const categories = useCatalogStore((s) => s.categories);
   const tags = useCatalogStore((s) => s.tags);
+  const t = useT();
 
   // 物品为空时呈现引导首页；否则直接复用列表页（保留全部检索/筛选体验）
   const isFirstRun = useMemo(() => items.length === 0, [items.length]);
@@ -36,147 +38,151 @@ export default function HomePage() {
         <div className="home-hero-text">
           <div className="home-eyebrow mono">
             <span className="home-eyebrow-dot" aria-hidden />
-            WHERE IS IT? · 你的私人物品账本
+            {t("home.eyebrow")}
           </div>
           <h1 className="home-title">
-            <span className="home-title-line">Where Is It?</span>
+            <span className="home-title-line">{t("home.title.l1")}</span>
             <span className="home-title-line home-title-emph">
-              记下每件物品，时隔再久也不丢。
+              {t("home.title.l2")}
             </span>
           </h1>
-          <p className="home-lede">
-            把身边的物品逐条记进浏览器：名称、位置、价格、标签、图片。
-            三个月、一年、五年后忘记自己是否买过、放在哪里——打开
-            <em> Where Is It? </em>
-            搜一搜就知道它是否已经存在、它被安放在了哪里。
-          </p>
+          <p
+            className="home-lede"
+            // lede 包含 {app} 占位符（用作 <em> Where Is It? </em> 的高亮）
+            dangerouslySetInnerHTML={{
+              __html: t("home.lede").replace(
+                /\{app\}/g,
+                '<em>Where Is It?</em>',
+              ),
+            }}
+          />
 
           <div className="home-cta">
             <Link to={newItemLink()} className="btn home-cta-primary">
               <Plus size={16} strokeWidth={1.75} aria-hidden />
-              &nbsp;记录第一件物品
+              &nbsp;{t("home.cta.primary")}
             </Link>
             <Link to="/stats" className="btn btn-ghost">
-              查看统计
+              {t("home.cta.secondary")}
               <ArrowRight size={14} strokeWidth={1.5} aria-hidden />
             </Link>
           </div>
         </div>
 
-        {/* 右侧 mock 列表：用纯几何/文字拼一张“清单样张”，不依赖外链图 */}
+        {/* 右侧 mock 列表：用纯几何/文字拼一张"清单样张"，不依赖外链图 */}
         <aside className="home-hero-card" aria-hidden>
           <div className="home-hero-card-head">
-            <span className="mono">SAMPLE · INVENTORY</span>
+            <span className="mono">{t("home.card.head")}</span>
             <span className="mono subtle">/ 04</span>
           </div>
           <ul className="home-hero-list">
             <SampleRow
               icon={<Box size={14} strokeWidth={1.5} />}
-              name="机械键盘"
-              meta="书房 · 桌面"
-              tag="#办公"
+              name={t("home.sample.keyboard.name")}
+              meta={t("home.sample.keyboard.meta")}
+              tag={t("home.tag.office")}
             />
             <SampleRow
               icon={<Camera size={14} strokeWidth={1.5} />}
-              name="微单相机"
-              meta="玄关 · 抽屉"
-              tag="#摄影"
+              name={t("home.sample.camera.name")}
+              meta={t("home.sample.camera.meta")}
+              tag={t("home.tag.photo")}
             />
             <SampleRow
               icon={<MapPin size={14} strokeWidth={1.5} />}
-              name="护照"
-              meta="主卧 · 保险柜"
-              tag="#证件"
+              name={t("home.sample.passport.name")}
+              meta={t("home.sample.passport.meta")}
+              tag={t("home.tag.cert")}
             />
             <SampleRow
               icon={<Box size={14} strokeWidth={1.5} />}
-              name="充电宝"
-              meta="背包 · 内袋"
-              tag="#出行"
+              name={t("home.sample.powerbank.name")}
+              meta={t("home.sample.powerbank.meta")}
+              tag={t("home.tag.travel")}
             />
           </ul>
           <div className="home-hero-card-foot mono subtle">
-            — 查询：「键盘」已存在 · 位于「书房 · 桌面」
+            {t("home.card.foot")}
           </div>
         </aside>
       </section>
 
       {/* ===== 能力四宫格：网站核心特点 ===== */}
-      <section className="home-features" aria-label="核心特点">
+      <section className="home-features" aria-label={t("common.search")}>
         <Feature
           icon={<Search size={16} strokeWidth={1.5} />}
           index="01"
-          title="查重 · 防重复购买"
-          desc="下次想买东西前先搜一搜，避免重复下单；长时间没想起的物品也能快速确认是否已经存在。"
+          title={t("home.feature1.title")}
+          desc={t("home.feature1.desc")}
         />
         <Feature
           icon={<MapPin size={16} strokeWidth={1.5} />}
           index="02"
-          title="记位置 · 快速找回"
-          desc="为每件物品标注存放位置。哪怕时隔多年搬家、收纳变更，也能依据记录一步步顺藤摸瓜。"
+          title={t("home.feature2.title")}
+          desc={t("home.feature2.desc")}
         />
         <Feature
           icon={<TagIcon size={16} strokeWidth={1.5} />}
           index="03"
-          title="多维组织"
-          desc="用分组、分类、标签三套维度灵活归类，按场景或按用途都能一眼看清家底。"
+          title={t("home.feature3.title")}
+          desc={t("home.feature3.desc")}
         />
         <Feature
           icon={<HardDrive size={16} strokeWidth={1.5} />}
           index="04"
-          title="本地优先"
-          desc="所有记录保存在浏览器本地，不上传服务器。属于个人的物品账本，只有自己能翻阅。"
+          title={t("home.feature4.title")}
+          desc={t("home.feature4.desc")}
         />
       </section>
 
       {/* ===== 三步上手：体现网站特点功能 ===== */}
-      <section className="home-steps" aria-label="三步上手">
+      <section className="home-steps" aria-label={t("home.steps.title")}>
         <header className="section-head">
-          <h2>三步把物品存进账本</h2>
-          <span className="mono subtle">GET STARTED IN 3 STEPS</span>
+          <h2>{t("home.steps.title")}</h2>
+          <span className="mono subtle">{t("home.steps.subtitle")}</span>
         </header>
         <ol className="home-steps-list">
           <Step
             n={1}
-            title="逐条记录每一件物品"
-            desc="点击「记录第一件物品」，填写名称、位置、价格、标签，必要时附上照片——所有字段都可选，只有名称必填。"
+            title={t("home.step1.title")}
+            desc={t("home.step1.desc")}
           />
           <Step
             n={2}
-            title="用位置与标签归类"
-            desc="位置字段是「它在哪」，标签是「它是什么」；位置 + 标签组合起来，就是未来找回它的钥匙。"
+            title={t("home.step2.title")}
+            desc={t("home.step2.desc")}
           />
           <Step
             n={3}
-            title="搜索 · 确认是否已存在"
-            desc="再次想起某件物品时，回到首页输入关键词搜索：如果清单里已有，说明它已经存在，点开就能看到图片与位置。"
+            title={t("home.step3.title")}
+            desc={t("home.step3.desc")}
           />
         </ol>
       </section>
 
       {/* ===== 数据规模提示：让用户一眼看清当前状态 ===== */}
-      <section className="home-meta" aria-label="数据状态">
+      <section className="home-meta" aria-label={t("home.meta.items")}>
         <MetaCell
-          label="已记录物品"
+          label={t("home.meta.items")}
           value={items.length}
-          hint="点击下方 + 开始第一条"
+          hint={t("home.meta.itemsHint")}
         />
         <MetaCell
-          label="分组"
+          label={t("home.meta.groups")}
           value={groups.length}
-          hint="管理入口 /groups"
+          hint={t("home.meta.groupsHint")}
           to="/groups"
         />
         <MetaCell
-          label="分类"
+          label={t("home.meta.categories")}
           value={categories.length}
-          hint="管理入口 /categories"
+          hint={t("home.meta.categoriesHint")}
           to="/categories"
         />
         <MetaCell
-          label="标签"
+          label={t("home.meta.tags")}
           value={tags.length}
-          hint="管理入口 /tags"
+          hint={t("home.meta.tagsHint")}
           to="/tags"
         />
       </section>
@@ -184,14 +190,12 @@ export default function HomePage() {
       {/* ===== 页脚 CTA：再次强调首屏主操作 ===== */}
       <section className="home-footcta">
         <div className="home-footcta-text">
-          <h3>开始你的第一件物品</h3>
-          <p className="muted">
-            记下来，以后忘了也能找到——这是 Where Is It? 存在的意义。
-          </p>
+          <h3>{t("home.footcta.title")}</h3>
+          <p className="muted">{t("home.footcta.desc")}</p>
         </div>
         <Link to={newItemLink()} className="btn home-cta-primary">
           <Plus size={16} strokeWidth={1.75} aria-hidden />
-          &nbsp;记录第一件物品
+          &nbsp;{t("home.cta.primary")}
         </Link>
       </section>
     </div>
