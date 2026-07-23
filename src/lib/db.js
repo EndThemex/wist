@@ -9,7 +9,8 @@ const DB_VERSION = 2;
 // 并在下面提供对应 migrateXxx 函数把旧版本 payload 升到新版本
 // v1: 初始结构
 // v2: 新增 locations 存储（常用位置，与 items 无强绑定；删除/重命名不影响物品的 location 文本）
-export const EXPORT_VERSION = 2;
+// v3: blobs 改为 base64 序列化（之前 JSON.stringify(Blob) 会丢图，导入后图片全空）
+export const EXPORT_VERSION = 3;
 
 export const STORES = {
   items: "items",
@@ -74,11 +75,41 @@ export async function clearAll() {
 
 /* ========== 导出 / 导入 ========== */
 
+// Blob → base64：用于把图片数据写到 JSON 备份里（JSON.stringify(Blob) 会丢数据）
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(",")[1] || "");
+    r.onerror = () => reject(r.error || new Error("blobToBase64 failed"));
+    r.readAsDataURL(blob);
+  });
+}
+
+function base64ToBlob(b64, mime) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: mime || "application/octet-stream" });
+}
+
 export async function exportDB() {
   const db = await getDB();
   const data = {};
   for (const name of Object.values(STORES)) {
-    data[name] = await db.getAll(name);
+    if (name === STORES.blobs) {
+      // 把 blob 的二进制转成 base64，JSON 才能正确序列化
+      const rows = await db.getAll(name);
+      data[name] = await Promise.all(
+        rows.map(async (r) => ({
+          id: r.id,
+          mime: r.mime || "image/jpeg",
+          size: r.data?.size || 0,
+          dataBase64: await blobToBase64(r.data),
+        })),
+      );
+    } else {
+      data[name] = await db.getAll(name);
+    }
   }
   return {
     formatVersion: EXPORT_VERSION, // 导出文件数据格式版本（用于跨版本迁移）
@@ -105,11 +136,23 @@ export function migratePayload(payload) {
   }
 
   // 链式迁移：每当 EXPORT_VERSION 升一个号时，在这里加一条 case
-  // 当前 EXPORT_VERSION = 2：
+  // 当前 EXPORT_VERSION = 3：
   if (payload.formatVersion === 1) {
     // v1 → v2：新增 locations 存储（与 items 无绑定，仅作常用位置备选库）
     if (!Array.isArray(payload.data.locations)) payload.data.locations = [];
     payload.formatVersion = 2;
+  }
+  if (payload.formatVersion === 2) {
+    // v2 → v3：把 blobs 里的二进制 Blob 改成 base64 字符串，便于 JSON 序列化往返
+    if (Array.isArray(payload.data.blobs)) {
+      payload.data.blobs = payload.data.blobs.map((b) => {
+        if (!b || typeof b !== "object") return b;
+        // 旧版里 b.data 是 Blob，无法 JSON.stringify；这里没有 base64，无法恢复，置空
+        if (b.dataBase64) return b;
+        return { id: b.id, mime: b.mime || "image/jpeg", dataBase64: "" };
+      });
+    }
+    payload.formatVersion = 3;
   }
 
   return payload;
@@ -150,7 +193,17 @@ export async function importDB(payload) {
   for (const name of stores) {
     const store = tx.objectStore(name);
     for (const row of payload.data[name] || []) {
-      await store.put(row);
+      if (name === STORES.blobs) {
+        if (!row?.dataBase64) continue; // 旧备份图无法恢复，跳过
+        const blob = base64ToBlob(row.dataBase64, row.mime);
+        await store.put({
+          id: row.id,
+          mime: row.mime || "image/jpeg",
+          data: blob,
+        });
+      } else {
+        await store.put(row);
+      }
     }
   }
   await tx.done;

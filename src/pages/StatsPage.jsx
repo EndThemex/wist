@@ -126,7 +126,7 @@ export default function StatsPage() {
           <header className="section-head">
             <h3>{t("stats.section.topTags", { n: tagUsage.length })}</h3>
             <span className="mono subtle">
-              {t("stats.section.byGroup").split("·")[0] || ""}
+              {t("stats.section.topTagsHint")}
             </span>
           </header>
           <TagBars data={tagUsage} />

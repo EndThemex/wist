@@ -61,8 +61,33 @@ export const useCatalogStore = create((set) => ({
   // Items
   addItem: async (data) => {
     const id = await itemsRepo.create(data);
-    const items = await itemsRepo.list();
-    set({ items, loaded: true });
+    // 乐观更新：直接 push 新行到 items 数组，避免 list() 全表扫描 + 排序
+    set((s) => ({
+      items: [
+        ...s.items,
+        {
+          id: data.id || id,
+          name: data.name,
+          model: data.model || "",
+          price:
+            typeof data.price === "number"
+              ? data.price
+              : Number(data.price) || 0,
+          quantity: Number.isInteger(data.quantity)
+            ? data.quantity
+            : parseInt(data.quantity, 10) || 0,
+          groupId: data.groupId || "",
+          categoryId: data.categoryId || "",
+          tagIds: Array.isArray(data.tagIds) ? data.tagIds : [],
+          location: data.location || "",
+          note: data.note || "",
+          imageIds: Array.isArray(data.imageIds) ? data.imageIds : [],
+          createdAt: data.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+      loaded: true,
+    }));
     return id;
   },
   updateItem: async (id, patch) => {

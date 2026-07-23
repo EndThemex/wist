@@ -146,6 +146,7 @@ export default {
   "stats.section.byCategory": "By category",
   "stats.section.byGroup": "By group",
   "stats.section.topTags": "Top tags · {n}",
+  "stats.section.topTagsHint": "USAGE · sorted by frequency",
   "stats.section.recent": "Recently added",
   "stats.section.lowStock": "Low stock alerts",
   "stats.lowStock.hint": "Quantity ≤ {n}",
@@ -216,6 +217,8 @@ export default {
     "Backup from: {app} {ver}\nImporting will wipe all current data. Continue?",
   "settings.data.migrateFromV": "(will auto-migrate from v{from} to v{to})",
   "settings.data.unknownVersion": "(no version declared, treated as v{to})",
+  "settings.data.v2ImageLoss":
+    "Note: v2 backups use an old image format; images will be lost on import (only item data can be restored).",
   "settings.data.versionTooNew":
     "Cannot import: backup version (v{found}) is newer than supported (v{supported}). Please upgrade the app and retry.",
   "settings.theme.light": "Light",

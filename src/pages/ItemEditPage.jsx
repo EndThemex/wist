@@ -62,30 +62,7 @@ export default function ItemEditPage({ mode = "create" }) {
   // 折叠状态：默认全折叠；用户首次点开再展开
   const [open, setOpen] = useState(DEFAULT_OPEN);
 
-  const [imageMeta, setImageMeta] = useState([]); // [{id, blobId, size, width, height}]
   const [tagInput, setTagInput] = useState("");
-
-  useEffect(() => {
-    // 编辑模式下加载已有图片的 blob 与尺寸
-    let cancelled = false;
-    (async () => {
-      const result = [];
-      for (const imageId of imageIds) {
-        const row = await getDB().then((db) => db.get("images", imageId));
-        if (!row) continue;
-        const blob = await getDB().then((db) => db.get("blobs", row.blobId));
-        if (!blob) continue;
-        const url = URL.createObjectURL(blob.data);
-        const dim = await getDimensions(url);
-        URL.revokeObjectURL(url);
-        result.push({ id: imageId, blobId: row.blobId, size: blob.data.size });
-      }
-      if (!cancelled) setImageMeta(result);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [imageIds.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalCount = imageIds.length;
 
@@ -639,16 +616,6 @@ function CollapsibleSection({ title, badge, open, onToggle, children }) {
       {open && <div className="collapsible-body">{children}</div>}
     </section>
   );
-}
-
-function getDimensions(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () =>
-      resolve({ width: img.naturalWidth, height: img.naturalHeight });
-    img.onerror = () => resolve({ width: 0, height: 0 });
-    img.src = url;
-  });
 }
 
 function ImageCell({ imageId, onRemove }) {

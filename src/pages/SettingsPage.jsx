@@ -25,7 +25,9 @@ export default function SettingsPage() {
     setBusy(t("settings.data.exporting"));
     try {
       const data = await exportDB();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -52,21 +54,36 @@ export default function SettingsPage() {
 
     // 解析并显示备份描述，按版本判断是否需要迁移或拒绝
     const desc = describePayload(json);
-    const fmtV = typeof json?.formatVersion === "number" ? json.formatVersion : null;
-    let confirmHint = t("settings.data.confirmImport", { app: "?", ver: "?" }).split("\n")[1] || "";
+    const fmtV =
+      typeof json?.formatVersion === "number" ? json.formatVersion : null;
+    let confirmHint =
+      t("settings.data.confirmImport", { app: "?", ver: "?" }).split("\n")[1] ||
+      "";
     if (desc) {
       const versionNote =
         fmtV == null
           ? t("settings.data.unknownVersion", { to: EXPORT_VERSION })
           : fmtV < EXPORT_VERSION
-          ? t("settings.data.migrateFromV", { from: fmtV, to: EXPORT_VERSION })
-          : fmtV > EXPORT_VERSION
-          ? ""
-          : "";
-      confirmHint = t("settings.data.confirmImport", { app: desc.app, ver: desc.version })
-        + (versionNote ? "\n" + versionNote : "");
+            ? t("settings.data.migrateFromV", {
+                from: fmtV,
+                to: EXPORT_VERSION,
+              })
+            : fmtV > EXPORT_VERSION
+              ? ""
+              : "";
+      confirmHint =
+        t("settings.data.confirmImport", { app: desc.app, ver: desc.version }) +
+        (versionNote ? "\n" + versionNote : "");
+      if (fmtV === 2) {
+        confirmHint += "\n" + t("settings.data.v2ImageLoss");
+      }
       if (fmtV != null && fmtV > EXPORT_VERSION) {
-        alert(t("settings.data.versionTooNew", { found: fmtV, supported: EXPORT_VERSION }));
+        alert(
+          t("settings.data.versionTooNew", {
+            found: fmtV,
+            supported: EXPORT_VERSION,
+          }),
+        );
         return;
       }
     }
@@ -106,7 +123,11 @@ export default function SettingsPage() {
           <h3>{t("settings.section.theme")}</h3>
           <p className="muted">{t("settings.theme.hint")}</p>
         </div>
-        <div className="segmented" role="radiogroup" aria-label={t("settings.section.theme")}>
+        <div
+          className="segmented"
+          role="radiogroup"
+          aria-label={t("settings.section.theme")}
+        >
           {[
             { v: "light", labelKey: "settings.theme.light" },
             { v: "dark", labelKey: "settings.theme.dark" },
@@ -131,7 +152,11 @@ export default function SettingsPage() {
           <h3>{t("settings.section.lang")}</h3>
           <p className="muted">{t("settings.lang.hint")}</p>
         </div>
-        <div className="segmented" role="radiogroup" aria-label={t("settings.section.lang")}>
+        <div
+          className="segmented"
+          role="radiogroup"
+          aria-label={t("settings.section.lang")}
+        >
           {SUPPORTED_LOCALES.map((o) => (
             <button
               key={o.code}
@@ -153,18 +178,43 @@ export default function SettingsPage() {
           <p className="muted">{t("settings.data.hint")}</p>
         </div>
         <div className="settings-actions">
-          <button className="btn btn-ghost" onClick={onExport} disabled={!!busy}>
-            <Download size={14} strokeWidth={1.5} /> &nbsp;{t("settings.data.export")}
+          <button
+            className="btn btn-ghost"
+            onClick={onExport}
+            disabled={!!busy}
+          >
+            <Download size={14} strokeWidth={1.5} /> &nbsp;
+            {t("settings.data.export")}
           </button>
-          <button className="btn btn-ghost" onClick={() => fileRef.current?.click()} disabled={!!busy}>
-            <Upload size={14} strokeWidth={1.5} /> &nbsp;{t("settings.data.import")}
+          <button
+            className="btn btn-ghost"
+            onClick={() => fileRef.current?.click()}
+            disabled={!!busy}
+          >
+            <Upload size={14} strokeWidth={1.5} /> &nbsp;
+            {t("settings.data.import")}
           </button>
-          <input ref={fileRef} type="file" accept="application/json" hidden onChange={onImport} />
-          <button className="btn btn-danger" onClick={onClear} disabled={!!busy}>
-            <Trash2 size={14} strokeWidth={1.5} /> &nbsp;{t("settings.data.clear")}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json"
+            hidden
+            onChange={onImport}
+          />
+          <button
+            className="btn btn-danger"
+            onClick={onClear}
+            disabled={!!busy}
+          >
+            <Trash2 size={14} strokeWidth={1.5} /> &nbsp;
+            {t("settings.data.clear")}
           </button>
         </div>
-        {busy && <div className="muted mono" style={{ marginTop: 8 }}>{busy}</div>}
+        {busy && (
+          <div className="muted mono" style={{ marginTop: 8 }}>
+            {busy}
+          </div>
+        )}
       </section>
 
       <section className="settings-block">

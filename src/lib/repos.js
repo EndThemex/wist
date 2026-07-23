@@ -1,5 +1,6 @@
 // 通用仓储：CRUD + 列表
-import { getDB, STORES } from './db.js';
+import { getDB, STORES } from "./db.js";
+import { invalidateBlobURL } from "./blobCache.js";
 
 async function listAll(storeName) {
   const db = await getDB();
@@ -26,21 +27,26 @@ async function remove(storeName, id) {
 export const itemsRepo = {
   list: async () => {
     const items = await listAll(STORES.items);
-    return items.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    return items.sort((a, b) =>
+      (b.createdAt || "").localeCompare(a.createdAt || ""),
+    );
   },
   get: (id) => getById(STORES.items, id),
   create: async (data) => {
     const row = {
       id: data.id,
       name: data.name,
-      model: data.model || '',
-      price: typeof data.price === 'number' ? data.price : Number(data.price) || 0,
-      quantity: Number.isInteger(data.quantity) ? data.quantity : parseInt(data.quantity, 10) || 0,
-      groupId: data.groupId || '',
-      categoryId: data.categoryId || '',
+      model: data.model || "",
+      price:
+        typeof data.price === "number" ? data.price : Number(data.price) || 0,
+      quantity: Number.isInteger(data.quantity)
+        ? data.quantity
+        : parseInt(data.quantity, 10) || 0,
+      groupId: data.groupId || "",
+      categoryId: data.categoryId || "",
       tagIds: Array.isArray(data.tagIds) ? data.tagIds : [],
-      location: data.location || '',
-      note: data.note || '',
+      location: data.location || "",
+      note: data.note || "",
       imageIds: Array.isArray(data.imageIds) ? data.imageIds : [],
       createdAt: data.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -50,25 +56,32 @@ export const itemsRepo = {
   },
   update: async (id, patch) => {
     const cur = await getById(STORES.items, id);
-    if (!cur) throw new Error('物品不存在');
+    if (!cur) throw new Error("物品不存在");
     const next = { ...cur, ...patch, id, updatedAt: new Date().toISOString() };
     await put(STORES.items, next);
   },
   remove: async (id) => {
     // 级联删除图片与 blob
     const db = await getDB();
-    const imgs = await db.getAllFromIndex(STORES.images, 'itemId', id);
-    const tx = db.transaction([STORES.items, STORES.images, STORES.blobs], 'readwrite');
+    const imgs = await db.getAllFromIndex(STORES.images, "itemId", id);
+    const tx = db.transaction(
+      [STORES.items, STORES.images, STORES.blobs],
+      "readwrite",
+    );
     await tx.objectStore(STORES.items).delete(id);
     for (const img of imgs) {
       await tx.objectStore(STORES.images).delete(img.id);
-      if (img.blobId) await tx.objectStore(STORES.blobs).delete(img.blobId);
+      if (img.blobId) {
+        await tx.objectStore(STORES.blobs).delete(img.blobId);
+        // 删 DB 同步失效 blob URL 缓存，避免陈旧 URL 占用到 LRU 淘汰
+        invalidateBlobURL(img.blobId);
+      }
     }
     await tx.done;
   },
   bulkReplace: async (items) => {
     const db = await getDB();
-    const tx = db.transaction(STORES.items, 'readwrite');
+    const tx = db.transaction(STORES.items, "readwrite");
     await tx.objectStore(STORES.items).clear();
     for (const it of items) await tx.objectStore(STORES.items).put(it);
     await tx.done;
@@ -79,23 +92,32 @@ export const itemsRepo = {
 export const imagesRepo = {
   listByItem: async (itemId) => {
     const db = await getDB();
-    const imgs = await db.getAllFromIndex(STORES.images, 'itemId', itemId);
+    const imgs = await db.getAllFromIndex(STORES.images, "itemId", itemId);
     return imgs.sort((a, b) => a.order - b.order);
   },
   add: async (itemId, blobId, order = 0) => {
-    const row = { id: `img_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`, itemId, blobId, order };
+    const row = {
+      id: `img_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+      itemId,
+      blobId,
+      order,
+    };
     await put(STORES.images, row);
     return row.id;
   },
   remove: async (id) => {
     const db = await getDB();
     const img = await db.get(STORES.images, id);
-    if (img?.blobId) await db.delete(STORES.blobs, img.blobId);
+    if (img?.blobId) {
+      await db.delete(STORES.blobs, img.blobId);
+      // 删 DB 同步失效 blob URL 缓存
+      invalidateBlobURL(img.blobId);
+    }
     await db.delete(STORES.images, id);
   },
   reorder: async (orderedIds) => {
     const db = await getDB();
-    const tx = db.transaction(STORES.images, 'readwrite');
+    const tx = db.transaction(STORES.images, "readwrite");
     for (let i = 0; i < orderedIds.length; i++) {
       const cur = await tx.objectStore(STORES.images).get(orderedIds[i]);
       if (cur) await tx.objectStore(STORES.images).put({ ...cur, order: i });
@@ -108,7 +130,11 @@ export const blobsRepo = {
   put: async (blob) => {
     const db = await getDB();
     const id = `blob_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
-    await db.put(STORES.blobs, { id, mime: blob.type || 'image/jpeg', data: blob });
+    await db.put(STORES.blobs, {
+      id,
+      mime: blob.type || "image/jpeg",
+      data: blob,
+    });
     return id;
   },
   getURL: async (id) => {
@@ -129,14 +155,19 @@ function makeSlugRepo(storeName, label, cascadeOnRemove) {
   return {
     list: () => listAll(storeName),
     get: (id) => getById(storeName, id),
-    create: async ({ name, color = '', order = 0 }) => {
-      const row = { id: `${label}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`, name: String(name).trim(), color, order };
+    create: async ({ name, color = "", order = 0 }) => {
+      const row = {
+        id: `${label}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+        name: String(name).trim(),
+        color,
+        order,
+      };
       await put(storeName, row);
       return row.id;
     },
     update: async (id, patch) => {
       const cur = await getById(storeName, id);
-      if (!cur) throw new Error('不存在');
+      if (!cur) throw new Error("不存在");
       await put(storeName, { ...cur, ...patch, id });
     },
     remove: async (id) => {
@@ -152,22 +183,36 @@ function makeSlugRepo(storeName, label, cascadeOnRemove) {
 async function clearItemsField(field, value) {
   const db = await getDB();
   const all = await db.getAll(STORES.items);
-  const tx = db.transaction(STORES.items, 'readwrite');
+  const tx = db.transaction(STORES.items, "readwrite");
   for (const it of all) {
-    if (field === 'tagIds') {
+    if (field === "tagIds") {
       if (Array.isArray(it.tagIds) && it.tagIds.includes(value)) {
-        await tx.store.put({ ...it, tagIds: it.tagIds.filter((t) => t !== value), updatedAt: new Date().toISOString() });
+        await tx.store.put({
+          ...it,
+          tagIds: it.tagIds.filter((t) => t !== value),
+          updatedAt: new Date().toISOString(),
+        });
       }
     } else if (it[field] === value) {
-      await tx.store.put({ ...it, [field]: '', updatedAt: new Date().toISOString() });
+      await tx.store.put({
+        ...it,
+        [field]: "",
+        updatedAt: new Date().toISOString(),
+      });
     }
   }
   await tx.done;
 }
 
-export const groupsRepo = makeSlugRepo(STORES.groups, 'g', (id) => clearItemsField('groupId', id));
-export const categoriesRepo = makeSlugRepo(STORES.categories, 'c', (id) => clearItemsField('categoryId', id));
-export const tagsRepo = makeSlugRepo(STORES.tags, 't', (id) => clearItemsField('tagIds', id));
+export const groupsRepo = makeSlugRepo(STORES.groups, "g", (id) =>
+  clearItemsField("groupId", id),
+);
+export const categoriesRepo = makeSlugRepo(STORES.categories, "c", (id) =>
+  clearItemsField("categoryId", id),
+);
+export const tagsRepo = makeSlugRepo(STORES.tags, "t", (id) =>
+  clearItemsField("tagIds", id),
+);
 
 // ============ Locations ============
 // 常用位置库：与 items 无绑定关系（弱关联）。
@@ -190,7 +235,7 @@ export const locationsRepo = {
   },
   update: async (id, patch) => {
     const cur = await getById(STORES.locations, id);
-    if (!cur) throw new Error('不存在');
+    if (!cur) throw new Error("不存在");
     await put(STORES.locations, { ...cur, ...patch, id });
   },
   remove: async (id) => {
@@ -200,10 +245,10 @@ export const locationsRepo = {
   // 原子化"按名称自增计数"，不存在则创建。用于编辑保存时统计使用频次，
   // 为编辑页与管理页"按使用频次排序"提供数据来源。
   bumpByName: async (name) => {
-    const trimmed = String(name || '').trim();
+    const trimmed = String(name || "").trim();
     if (!trimmed) return null;
     const db = await getDB();
-    const idx = db.transaction(STORES.locations).store.index('name');
+    const idx = db.transaction(STORES.locations).store.index("name");
     const row = await idx.get(trimmed);
     if (row) {
       const next = { ...row, useCount: (row.useCount || 0) + 1 };

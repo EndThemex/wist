@@ -146,6 +146,7 @@ export default {
   "stats.section.byCategory": "分类分布",
   "stats.section.byGroup": "分组数量",
   "stats.section.topTags": "常用标签 TOP {n}",
+  "stats.section.topTagsHint": "USAGE · 按使用频次排序",
   "stats.section.recent": "最近添加",
   "stats.section.lowStock": "低库存提醒",
   "stats.lowStock.hint": "数量 ≤ {n}",
@@ -212,6 +213,8 @@ export default {
     "备份来源：{app} {ver}\n导入将清空当前所有数据，确定继续？",
   "settings.data.migrateFromV": "（将自动从 v{from} 迁移到 v{to}）",
   "settings.data.unknownVersion": "（未声明版本，将作为 v{to} 处理）",
+  "settings.data.v2ImageLoss":
+    "注意：v2 备份的图片数据为旧格式，导入后图片会丢失（仅物品信息可恢复）。",
   "settings.data.versionTooNew":
     "无法导入：备份文件版本（v{found}）高于当前应用支持版本（v{supported}）。请升级应用后重试。",
   "settings.theme.light": "亮色",

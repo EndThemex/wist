@@ -421,9 +421,19 @@ function PackageIcon(props) {
   );
 }
 
-// 把每个 item 的首图 imageId 映射到对应的 blobId（一次 DB 事务 + 并行 get）
+// 把每个 item 的首图 imageId 映射到对应的 blobId
+// 依赖只跟「首图 imageId」有关，避免 addItem/updateItem/removeItem 触发整次重算
+// 取数：一次 db.getAll('images') 拿到全表，按 itemId 分组后查每个 item 的首图
 function useFirstBlobIds(items) {
   const [map, setMap] = useState({});
+  // 派生稳定 key：item.id + 首图 imageId
+  const depsKey = useMemo(() => {
+    let s = "";
+    for (const it of items || []) {
+      s += it.id + ":" + ((it.imageIds && it.imageIds[0]) || "") + ",";
+    }
+    return s;
+  }, [items]);
   useEffect(() => {
     let cancelled = false;
     if (!items || items.length === 0) {
@@ -433,18 +443,23 @@ function useFirstBlobIds(items) {
     (async () => {
       try {
         const db = await getDB();
-        const tx = db.transaction("images", "readonly");
-        const store = tx.objectStore("images");
+        // 只读 transaction + 全表一次扫描，前端按 itemId 分组后取首图
+        const allImages = await db.getAll("images");
+        const byItem = new Map();
+        for (const row of allImages) {
+          const arr = byItem.get(row.itemId) || [];
+          arr.push(row);
+          byItem.set(row.itemId, arr);
+        }
         const out = {};
-        await Promise.all(
-          items.map(async (it) => {
-            const firstId = (it.imageIds || [])[0];
-            if (!firstId) return;
-            const row = await store.get(firstId);
-            if (row && row.blobId) out[it.id] = row.blobId;
-          }),
-        );
-        await tx.done;
+        for (const it of items) {
+          const arr = byItem.get(it.id);
+          if (!arr || arr.length === 0) continue;
+          // 已有 order 字段时按 order 取最小
+          arr.sort((a, b) => (a.order || 0) - (b.order || 0));
+          const first = arr[0];
+          if (first?.blobId) out[it.id] = first.blobId;
+        }
         if (!cancelled) setMap(out);
       } catch (_) {
         if (!cancelled) setMap({});
@@ -453,7 +468,7 @@ function useFirstBlobIds(items) {
     return () => {
       cancelled = true;
     };
-  }, [items]);
+  }, [depsKey]); // eslint-disable-line react-hooks/exhaustive-deps
   return map;
 }
 
