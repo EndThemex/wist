@@ -82,6 +82,7 @@ export const useCatalogStore = create((set) => ({
           location: data.location || "",
           note: data.note || "",
           imageIds: Array.isArray(data.imageIds) ? data.imageIds : [],
+          purchasedAt: data.purchasedAt || "",
           createdAt: data.createdAt || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },

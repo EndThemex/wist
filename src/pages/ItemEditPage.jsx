@@ -50,6 +50,17 @@ export default function ItemEditPage({ mode = "create" }) {
   const [model, setModel] = useState(item?.model || "");
   const [price, setPrice] = useState(item?.price ?? 0);
   const [quantity, setQuantity] = useState(item?.quantity ?? 1);
+  // 购买日期：默认当天（仅新增时；编辑时保留原值）
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }, []);
+  const [purchasedAt, setPurchasedAt] = useState(
+    item?.purchasedAt || (mode === "create" ? todayStr : ""),
+  );
   const presetGroup = searchParams.get("group") || "";
   const [groupId, setGroupId] = useState(item?.groupId || presetGroup);
   const [categoryId, setCategoryId] = useState(item?.categoryId || "");
@@ -93,6 +104,7 @@ export default function ItemEditPage({ mode = "create" }) {
         location: location.trim(),
         note: note.trim(),
         imageIds,
+        purchasedAt,
       };
       if (mode === "create") {
         const newId = uid("it");
@@ -259,9 +271,12 @@ export default function ItemEditPage({ mode = "create" }) {
   // 用于折叠头部徽标：显示已填写项的简短摘要
   const filledCounts = {
     images: imageIds.length,
-    more: [model.trim(), price > 0 ? 1 : 0, quantity > 0 ? 1 : 0].filter(
-      Boolean,
-    ).length,
+    more: [
+      model.trim(),
+      price > 0 ? 1 : 0,
+      quantity > 0 ? 1 : 0,
+      purchasedAt ? 1 : 0,
+    ].filter(Boolean).length,
     classify: [groupId, categoryId].filter(Boolean).length,
     tags: tagIds.length,
     location: location.trim() ? 1 : 0,
@@ -392,6 +407,32 @@ export default function ItemEditPage({ mode = "create" }) {
               onChange={(e) => setQuantity(e.target.value)}
               placeholder={t("edit.qty.placeholder")}
             />
+          </div>
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="f-purchased">
+            {t("edit.field.purchasedAt")}
+          </label>
+          <div className="date-row">
+            <input
+              id="f-purchased"
+              type="date"
+              className="input mono"
+              value={purchasedAt}
+              onChange={(e) => setPurchasedAt(e.target.value)}
+              placeholder={t("edit.purchasedAt.placeholder")}
+            />
+            {purchasedAt && (
+              <button
+                type="button"
+                className="date-clear"
+                onClick={() => setPurchasedAt("")}
+                aria-label={t("common.cancel")}
+                title={t("common.cancel")}
+              >
+                <X size={14} strokeWidth={1.5} />
+              </button>
+            )}
           </div>
         </div>
       </CollapsibleSection>

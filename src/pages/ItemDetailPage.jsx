@@ -5,7 +5,14 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { ArrowLeft, Pencil, Trash2, MapPin, Copy } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  MapPin,
+  Copy,
+  Calendar,
+} from "lucide-react";
 import { useCatalogStore } from "@/store/useCatalogStore";
 import Carousel from "@/components/Carousel.jsx";
 import { editItemLink } from "@/lib/url";
@@ -49,6 +56,17 @@ export default function ItemDetailPage() {
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
+      }),
+    [lang],
+  );
+
+  // 购买日期专用：仅展示日期（不显示时分），与 ISO YYYY-MM-DD 配合
+  const fmtDate = useMemo(
+    () =>
+      new Intl.DateTimeFormat(lang === "zh" ? "zh-CN" : "en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
       }),
     [lang],
   );
@@ -170,6 +188,19 @@ export default function ItemDetailPage() {
                     #{tg.name}
                   </span>
                 ))}
+              </span>
+            }
+          />
+        )}
+        {item.purchasedAt && (
+          <KV
+            label={t("detail.field.purchasedAt")}
+            value={
+              <span className="row" style={{ gap: 6 }}>
+                <Calendar size={14} strokeWidth={1.5} />
+                <span className="mono">
+                  {fmtDate.format(new Date(item.purchasedAt))}
+                </span>
               </span>
             }
           />

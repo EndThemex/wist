@@ -307,6 +307,50 @@
   cursor: not-allowed;
 }
 
+.date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-row .input[type="date"] {
+  flex: 1;
+  min-width: 0;
+  /* 部分浏览器原生 date 的 padding 与全局 .input 不一致，做归一化 */
+  padding: 10px 0;
+}
+
+/* 隐藏 WebKit 内置的日历指示器箭头，统一外观；
+   点击输入框任意位置都能弹出原生选择器，行为不变 */
+.date-row .input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.date-row .input[type="date"]:hover::-webkit-calendar-picker-indicator,
+.date-row .input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  opacity: 0.9;
+}
+
+.date-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.date-clear:hover {
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+
 /* === 旋转动画 === */
 .spin {
   animation: spin 0.8s linear infinite;
