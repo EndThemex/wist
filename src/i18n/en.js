@@ -22,6 +22,7 @@ export default {
   "nav.groups": "Groups",
   "nav.categories": "Categories",
   "nav.tags": "Tags",
+  "nav.locations": "Locations",
   "nav.stats": "Stats",
   "nav.settings": "Settings",
   "nav.addItem": "New",
@@ -37,6 +38,7 @@ export default {
   "hint.groups": "GROUPS",
   "hint.categories": "CATEGORIES",
   "hint.tags": "TAGS",
+  "hint.locations": "LOCATIONS",
   "hint.stats": "STATS",
   "hint.settings": "SETTINGS",
 
@@ -183,6 +185,9 @@ export default {
   // Tag management
   "manage.tags.hint":
     'Fine-grained labels shared across items, e.g. "Fragile", "On loan".',
+  // Location management
+  "manage.locations.hint":
+    "A library of common locations. Pick one to quickly fill the location field when recording items. Deleting or renaming a location does not change the location text already saved on existing items.",
 
   // ===== Settings page =====
   "settings.title": "Settings",

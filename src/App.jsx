@@ -11,6 +11,7 @@ const ItemEditPage = lazy(() => import("@/pages/ItemEditPage.jsx"));
 const GroupsPage = lazy(() => import("@/pages/GroupManagePage.jsx"));
 const CategoriesPage = lazy(() => import("@/pages/CategoriesPage.jsx"));
 const TagsPage = lazy(() => import("@/pages/TagsPage.jsx"));
+const LocationsPage = lazy(() => import("@/pages/LocationsPage.jsx"));
 const StatsPage = lazy(() => import("@/pages/StatsPage.jsx"));
 const SettingsPage = lazy(() => import("@/pages/SettingsPage.jsx"));
 
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/tags" element={<TagsPage />} />
+          <Route path="/locations" element={<LocationsPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

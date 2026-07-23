@@ -8,6 +8,7 @@ import {
   FolderTree,
   Tag as TagIcon,
   Layers,
+  MapPin,
   MoreHorizontal,
   Check,
   Sun,
@@ -26,6 +27,7 @@ const NAV = [
   { to: "/groups", labelKey: "nav.groups", icon: FolderTree },
   { to: "/categories", labelKey: "nav.categories", icon: Layers },
   { to: "/tags", labelKey: "nav.tags", icon: TagIcon },
+  { to: "/locations", labelKey: "nav.locations", icon: MapPin },
   { to: "/stats", labelKey: "nav.stats", icon: BarChart3 },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
@@ -391,6 +393,8 @@ function getPageMeta(pathname, t) {
     return { title: t("nav.categories"), hint: t("hint.categories") };
   if (pathname.startsWith("/tags"))
     return { title: t("nav.tags"), hint: t("hint.tags") };
+  if (pathname.startsWith("/locations"))
+    return { title: t("nav.locations"), hint: t("hint.locations") };
   if (pathname.startsWith("/stats"))
     return { title: t("nav.stats"), hint: t("hint.stats") };
   if (pathname.startsWith("/settings"))

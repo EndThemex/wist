@@ -40,8 +40,10 @@ export default function ItemEditPage({ mode = "create" }) {
   const groups = useCatalogStore((s) => s.groups);
   const categories = useCatalogStore((s) => s.categories);
   const tags = useCatalogStore((s) => s.tags);
+  const locations = useCatalogStore((s) => s.locations);
   const addItem = useCatalogStore((s) => s.addItem);
   const updateItem = useCatalogStore((s) => s.updateItem);
+  const bumpLocationUsage = useCatalogStore((s) => s.bumpLocationUsage);
 
   const [name, setName] = useState(item?.name || "");
   const [model, setModel] = useState(item?.model || "");
@@ -138,6 +140,14 @@ export default function ItemEditPage({ mode = "create" }) {
         if (backOverride) navigate(backOverride);
         else navigate(`/items/${id}`);
       }
+      // 弱关联：把当时填写的 location 文本计入"常用位置"库（同名 +1，否则新建 useCount=1）
+      // 仅做后台累计，不影响保存结果
+      const trimmedLoc = String(payload.location || "").trim();
+      if (trimmedLoc) {
+        bumpLocationUsage(trimmedLoc).catch((err) =>
+          console.error("常用位置累计失败", err),
+        );
+      }
     } catch (err) {
       console.error(err);
       setError(err?.message || t("edit.error.saveFail"));
@@ -221,6 +231,34 @@ export default function ItemEditPage({ mode = "create" }) {
     if (!kw) return [];
     return tags.filter((tg) => tg.name.toLowerCase().includes(kw)).slice(0, 6);
   }, [tagInput, tags]);
+
+  // 常用位置：按使用频次降序；去重同名；剔除当前已输入文本，避免冗余
+  const locationSuggestions = useMemo(() => {
+    const cur = location.trim().toLowerCase();
+    const seen = new Set();
+    return locations
+      .filter(
+        (l) =>
+          l.name &&
+          !seen.has(l.name.toLowerCase()) &&
+          seen.add(l.name.toLowerCase()),
+      )
+      .sort((a, b) => {
+        const ua = a.useCount || 0;
+        const ub = b.useCount || 0;
+        if (ub !== ua) return ub - ua;
+        return (a.name || "").localeCompare(b.name || "");
+      })
+      .filter((l) => !cur || l.name.toLowerCase() !== cur)
+      .slice(0, 12);
+  }, [locations, location]);
+
+  // 输入时模糊过滤联想（仅显示前 6 条，避免长列表）
+  const locationMatch = useMemo(() => {
+    const kw = location.trim().toLowerCase();
+    if (!kw) return [];
+    return locationSuggestions.filter((l) => l.name.toLowerCase().includes(kw));
+  }, [locationSuggestions, location]);
 
   const toggle = (key) => setOpen((o) => ({ ...o, [key]: !o[key] }));
 
@@ -493,6 +531,37 @@ export default function ItemEditPage({ mode = "create" }) {
             placeholder={t("edit.location.placeholder")}
           />
         </div>
+        {/* 联想：输入时实时模糊匹配已有位置 */}
+        {locationMatch.length > 0 && (
+          <div className="tag-suggest">
+            {locationMatch.map((l) => (
+              <button
+                type="button"
+                key={l.id}
+                className="chip"
+                onClick={() => setLocation(l.name)}
+              >
+                {l.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {/* 常用 chips：仅在输入为空时展示，避免与联想重复 */}
+        {location.trim() === "" && locationSuggestions.length > 0 && (
+          <div className="tag-suggest">
+            {locationSuggestions.map((l) => (
+              <button
+                type="button"
+                key={l.id}
+                className="chip"
+                onClick={() => setLocation(l.name)}
+                title={`×${l.useCount || 0}`}
+              >
+                {l.name}
+              </button>
+            ))}
+          </div>
+        )}
       </CollapsibleSection>
 
       {/* 备注 */}

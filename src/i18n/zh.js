@@ -22,6 +22,7 @@ export default {
   "nav.groups": "分组",
   "nav.categories": "分类",
   "nav.tags": "标签",
+  "nav.locations": "位置",
   "nav.stats": "统计",
   "nav.settings": "设置",
   "nav.addItem": "新增",
@@ -37,6 +38,7 @@ export default {
   "hint.groups": "GROUPS",
   "hint.categories": "CATEGORIES",
   "hint.tags": "TAGS",
+  "hint.locations": "LOCATIONS",
   "hint.stats": "STATS",
   "hint.settings": "SETTINGS",
 
@@ -180,6 +182,9 @@ export default {
   // 标签管理特有
   "manage.tags.hint":
     "标签是细粒度的标记，多个物品可共用，例如「易碎」「借出中」。",
+  // 位置管理特有
+  "manage.locations.hint":
+    "常用位置备选库。在填写物品位置时可直接点选带入。删除/重命名位置不会影响已记录物品的位置文本。",
 
   // ===== 设置页 =====
   "settings.title": "设置",
